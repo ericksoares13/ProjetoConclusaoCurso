@@ -11,14 +11,19 @@ class Edge {
     Point* u;
     Point* v;
     double dist;
+    bool valid;
 
 public:
-    Edge() : u(nullptr), v(nullptr), dist(0.0) {}
-    Edge(Point* u, Point* v, const double dist) : u(u), v(v), dist(dist) {}
+    Edge() : u(nullptr), v(nullptr), dist(0.0), valid(false) {}
+    Edge(Point* u, Point* v, const double dist, const bool valid) : u(u), v(v), dist(dist), valid(valid) {}
 
     Point* getU() const { return this->u; }
     Point* getV() const { return this->v; }
     double getDist() const { return this->dist; }
+
+    void setValid(const bool newValid) { this->valid = newValid; }
+
+    bool isValid() const { return this->valid; }
 };
 
 

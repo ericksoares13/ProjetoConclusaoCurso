@@ -72,25 +72,26 @@ void Screen::drawPoints(const DynamicGraph &graph) {
     }
 }
 
-void Screen::drawEdges(const DynamicGraph &graph) {
-    for (auto &[id, edges]: graph.getAdj()){
-        for (const auto &edge : edges) {
-            const sf::Vertex line[] = {
-                sf::Vertex(latLonToScreen(edge.getU()->getX(), edge.getU()->getY(), graph), sf::Color::Black),
-                sf::Vertex(latLonToScreen(edge.getV()->getX(), edge.getV()->getY(), graph), sf::Color::Black)
-            };
-            this->backgroundTexture.draw(line,2,sf::Lines);
-        }
-    }
-}
-
 void Screen::drawBackground(DynamicGraph &graph) {
     this->drawGrid(graph);
     this->drawPoints(graph);
-    this->drawEdges(graph);
 
     this->backgroundTexture.display();
     this->background.setTexture(backgroundTexture.getTexture());
+}
+
+void Screen::drawEdges(const DynamicGraph &graph) {
+    for (auto &[id, edges]: graph.getAdj()){
+        for (const auto &edge : edges) {
+            if (edge.isValid()) {
+                const sf::Vertex line[] = {
+                    sf::Vertex(latLonToScreen(edge.getU()->getX(), edge.getU()->getY(), graph), sf::Color::Black),
+                    sf::Vertex(latLonToScreen(edge.getV()->getX(), edge.getV()->getY(), graph), sf::Color::Black)
+                };
+                this->window.draw(line,2,sf::Lines);
+            }
+        }
+    }
 }
 
 void Screen::drawPolygons(const DynamicGraph &graph) {
@@ -160,6 +161,7 @@ void Screen::update() {
 void Screen::render(const DynamicGraph &graph) {
     this->window.clear(sf::Color::White);
     this->window.draw(this->background);
+    this->drawEdges(graph);
     this->drawPolygons(graph);
     this->window.display();
 }

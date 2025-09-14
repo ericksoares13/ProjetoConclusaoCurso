@@ -28,7 +28,7 @@ void DynamicGraph::addEdge(const long long idU, const long long idV, const doubl
     Point *pointU = &idToPoint[idU];
     Point *pointV = &idToPoint[idV];
 
-    this->adj[idU].emplace_back(pointU, pointV, dist);
+    this->adj[idU].emplace_back(pointU, pointV, dist, true);
     this->uniformGrid.insertEdge(&this->adj[idU].back());
 }
 
