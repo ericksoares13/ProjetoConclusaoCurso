@@ -48,6 +48,7 @@ int main() {
         screen.processEvents();
         screen.update();
         screen.render(graph);
+        graph.updatePolygonsPosition();
     }
 
     return 0;

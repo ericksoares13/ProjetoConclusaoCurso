@@ -4,6 +4,8 @@
 
 #include "DynamicGraph.h"
 
+#include <random>
+
 DynamicGraph::DynamicGraph()
     : uniformGrid(UniformGrid(0.01)),
       cellSize(0.01),
@@ -32,4 +34,23 @@ void DynamicGraph::addEdge(const long long idU, const long long idV, const doubl
 
 void DynamicGraph::addPolygon(const Polygon &polygon) {
     this->polygons.push_back(polygon);
+}
+
+void DynamicGraph::updatePolygonsPosition() {
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    std::uniform_real_distribution<> dist(-0.0005, 0.0005);
+
+    for (auto &polygon : this->polygons) {
+        bool validMove = false;
+        int attempts = 0;
+
+        while (!validMove && attempts < 10) {
+            const double dx = dist(gen);
+            const double dy = dist(gen);
+
+            validMove = polygon.updatePosition(dx, dy, this->getUniformGrid());
+            attempts++;
+        }
+    }
 }

@@ -12,6 +12,7 @@
 
 class Polygon {
     std::vector<Point> points;
+    Point center;
 
 public:
     Polygon();
@@ -19,7 +20,7 @@ public:
 
     std::vector<Point>& getPoints();
 
-    void updatePosition();
+    bool updatePosition(double dx, double dy, UniformGrid &grid);
 
     static Polygon generateHexInGrid(UniformGrid &grid, double hexRadius);
 };

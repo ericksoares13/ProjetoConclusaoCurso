@@ -14,10 +14,27 @@ std::vector<Point>& Polygon::getPoints() {
     return this->points;
 }
 
-void Polygon::updatePosition() {
-    //
-}
+bool Polygon::updatePosition(const double dx, const double dy, UniformGrid &grid) {
+    const double newCenterX = this->center.getX() + dx;
+    const double newCenterY = this->center.getY() + dy;
 
+    const int cellI = static_cast<int>(newCenterX / grid.getCellSize());
+    const int cellJ = static_cast<int>(newCenterY / grid.getCellSize());
+
+    if (const Cell newCell(cellI, cellJ); !grid.getGrid().contains(newCell)) {
+        return false;
+    }
+
+    this->center.setX(newCenterX);
+    this->center.setY(newCenterY);
+
+    for (auto &p : this->points) {
+        p.setX(p.getX() + dx);
+        p.setY(p.getY() + dy);
+    }
+
+    return true;
+}
 
 Polygon Polygon::generateHexInGrid(UniformGrid &grid, const double hexRadius) {
     std::random_device rd;
@@ -47,6 +64,8 @@ Polygon Polygon::generateHexInGrid(UniformGrid &grid, const double hexRadius) {
     const double centerY = distY(gen);
 
     Polygon hex;
+    hex.center = Point(-1, centerX, centerY);
+
     for (int k = 0; k < 6; k++) {
         const double angle = M_PI / 3.0 * k;
         const double x = centerX + hexRadius * cos(angle);

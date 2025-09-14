@@ -35,6 +35,8 @@ public:
     void addEdge(long long idU, long long idV, double dist);
     void addPolygon(const Polygon &polygon);
 
+    void updatePolygonsPosition();
+
     std::unordered_map<long long, Point> getIdToPoint() const { return this->idToPoint; }
     std::unordered_map<long long, std::vector<Edge>> getAdj() const { return this->adj; }
     std::vector<Polygon> getPolygons() const { return this->polygons; }

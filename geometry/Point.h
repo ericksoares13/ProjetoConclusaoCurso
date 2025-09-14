@@ -19,6 +19,9 @@ public:
     long long getId() const { return this->id; }
     double getX() const { return this->x; }
     double getY() const { return this->y; }
+
+    void setX(const double newX) { this->x = newX; }
+    void setY(const double newY) { this->y = newY; }
 };
 
 
