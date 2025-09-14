@@ -39,19 +39,15 @@ int main() {
 
     inputFile.close();
 
+    graph.addPolygon(Polygon::generateHexInGrid(graph.getUniformGrid(), 0.005));
+
     Screen screen;
     screen.drawBackground(graph);
-
-    Polygon h = Polygon::generateHexInGrid(graph.getUniformGrid(), 0.005);
-
-    for (auto &p : h.getVertices()) {
-        std::cout << "(" << p.getY() << ", " << p.getX() << ")\n";
-    }
 
     while (screen.windowIsOpen()){
         screen.processEvents();
         screen.update();
-        screen.render();
+        screen.render(graph);
     }
 
     return 0;

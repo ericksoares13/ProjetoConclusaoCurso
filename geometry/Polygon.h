@@ -11,13 +11,15 @@
 
 
 class Polygon {
-    std::vector<Point> vertices;
+    std::vector<Point> points;
 
 public:
     Polygon();
-    explicit Polygon(const std::vector<Point>& vertices);
+    explicit Polygon(const std::vector<Point>& points);
 
-    std::vector<Point>& getVertices();
+    std::vector<Point>& getPoints();
+
+    void updatePosition();
 
     static Polygon generateHexInGrid(UniformGrid &grid, double hexRadius);
 };

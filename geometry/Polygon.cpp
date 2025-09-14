@@ -8,11 +8,16 @@
 
 Polygon::Polygon() = default;
 
-Polygon::Polygon(const std::vector<Point> &vertices) : vertices(vertices) {}
+Polygon::Polygon(const std::vector<Point> &points) : points(points) {}
 
-std::vector<Point>& Polygon::getVertices() {
-    return this->vertices;
+std::vector<Point>& Polygon::getPoints() {
+    return this->points;
 }
+
+void Polygon::updatePosition() {
+    //
+}
+
 
 Polygon Polygon::generateHexInGrid(UniformGrid &grid, const double hexRadius) {
     std::random_device rd;
@@ -46,7 +51,7 @@ Polygon Polygon::generateHexInGrid(UniformGrid &grid, const double hexRadius) {
         const double angle = M_PI / 3.0 * k;
         const double x = centerX + hexRadius * cos(angle);
         const double y = centerY + hexRadius * sin(angle);
-        hex.vertices.emplace_back(k, x, y);
+        hex.points.emplace_back(k, x, y);
     }
 
     return hex;

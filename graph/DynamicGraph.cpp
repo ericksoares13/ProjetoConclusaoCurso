@@ -29,3 +29,7 @@ void DynamicGraph::addEdge(const long long idU, const long long idV, const doubl
     this->adj[idU].emplace_back(pointU, pointV, dist);
     this->uniformGrid.insertEdge(&this->adj[idU].back());
 }
+
+void DynamicGraph::addPolygon(const Polygon &polygon) {
+    this->polygons.push_back(polygon);
+}

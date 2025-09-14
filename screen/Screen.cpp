@@ -5,6 +5,7 @@
 #include "Screen.h"
 
 #include <SFML/Graphics/CircleShape.hpp>
+#include <SFML/Graphics/ConvexShape.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/Keyboard.hpp>
@@ -92,6 +93,26 @@ void Screen::drawBackground(DynamicGraph &graph) {
     this->background.setTexture(backgroundTexture.getTexture());
 }
 
+void Screen::drawPolygons(const DynamicGraph &graph) {
+    for (auto &poly : graph.getPolygons()) {
+        sf::ConvexShape shape;
+
+        const size_t n = poly.getPoints().size();
+        shape.setPointCount(n);
+
+        for (size_t i = 0; i < n; i++) {
+            sf::Vector2f pos = latLonToScreen(poly.getPoints()[i].getX(), poly.getPoints()[i].getY(), graph);
+            shape.setPoint(i, pos);
+        }
+
+        shape.setFillColor(sf::Color::Green);
+        shape.setOutlineColor(sf::Color::Black);
+        shape.setOutlineThickness(1.0f);
+
+        this->window.draw(shape);
+    }
+}
+
 bool Screen::windowIsOpen() const {
     return this->window.isOpen();
 }
@@ -136,8 +157,9 @@ void Screen::update() {
     this->window.setView(this->view);
 }
 
-void Screen::render() {
+void Screen::render(const DynamicGraph &graph) {
     this->window.clear(sf::Color::White);
     this->window.draw(this->background);
+    this->drawPolygons(graph);
     this->window.display();
 }

@@ -25,6 +25,7 @@ class Screen {
     void drawGrid(DynamicGraph &graph);
     void drawPoints(const DynamicGraph &graph);
     void drawEdges(const DynamicGraph &graph);
+    void drawPolygons(const DynamicGraph &graph);
 
 public:
     Screen();
@@ -33,7 +34,7 @@ public:
     bool windowIsOpen() const;
     void processEvents();
     void update();
-    void render();
+    void render(const DynamicGraph &graph);
 };
 
 
