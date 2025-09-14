@@ -15,7 +15,9 @@ add_executable(ProjetoConclusaoCurso main.cpp
         graph/DynamicGraph.cpp
         graph/DynamicGraph.h
         screen/Screen.cpp
-        screen/Screen.h)
+        screen/Screen.h
+        helper/PointHelper.h
+        helper/GridHelper.h)
 
 target_link_libraries(ProjetoConclusaoCurso PRIVATE sfml-graphics sfml-window sfml-system)
 

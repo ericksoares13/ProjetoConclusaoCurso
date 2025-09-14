@@ -18,7 +18,7 @@ public:
     Polygon();
     explicit Polygon(const std::vector<Point>& points);
 
-    std::vector<Point>& getPoints();
+    const std::vector<Point>& getPoints() const;
 
     bool updatePosition(double dx, double dy, UniformGrid &grid);
 

@@ -37,9 +37,9 @@ public:
 
     void updatePolygonsPosition();
 
-    std::unordered_map<long long, Point> getIdToPoint() const { return this->idToPoint; }
-    std::unordered_map<long long, std::vector<Edge>> getAdj() const { return this->adj; }
-    std::vector<Polygon> getPolygons() const { return this->polygons; }
+    const std::unordered_map<long long, Point> &getIdToPoint() const { return this->idToPoint; }
+    const std::unordered_map<long long, std::vector<Edge>> &getAdj() const { return this->adj; }
+    const std::vector<Polygon> &getPolygons() const { return this->polygons; }
     UniformGrid &getUniformGrid() { return this->uniformGrid; }
     double getCellSize() const { return this->cellSize; }
     double getMinLon() const { return this->minLon; }

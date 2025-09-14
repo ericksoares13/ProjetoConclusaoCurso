@@ -22,6 +22,14 @@ public:
 
     void setX(const double newX) { this->x = newX; }
     void setY(const double newY) { this->y = newY; }
+
+    Point operator-(const Point &other) const {
+        return {-1, this->x - other.x , this->y - other.y};
+    }
+
+    Point operator*(const double k) const {
+        return {-1, this->x*k , this->y*k};
+    }
 };
 
 

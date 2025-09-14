@@ -4,6 +4,7 @@
 
 #include "geometry/Polygon.h"
 #include "graph/DynamicGraph.h"
+#include "helper/GridHelper.h"
 #include "screen/Screen.h"
 
 int main() {
@@ -48,6 +49,7 @@ int main() {
         screen.processEvents();
         screen.update();
         screen.render(graph);
+        GridHelper::getOccupiedCells(graph.getPolygons(), graph.getUniformGrid());
         graph.updatePolygonsPosition();
     }
 

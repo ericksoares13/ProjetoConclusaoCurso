@@ -10,7 +10,7 @@ Polygon::Polygon() = default;
 
 Polygon::Polygon(const std::vector<Point> &points) : points(points) {}
 
-std::vector<Point>& Polygon::getPoints() {
+const std::vector<Point>& Polygon::getPoints() const {
     return this->points;
 }
 
