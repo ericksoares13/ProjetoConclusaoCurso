@@ -22,8 +22,8 @@ class Screen {
     sf::View view;
 
     sf::Vector2f latLonToScreen(double lon, double lat, const DynamicGraph &graph) const;
-    void drawGrid(const DynamicGraph &graph);
-    void drawPoints(const DynamicGraph &graph);
+    void drawBackgroundGrid(const DynamicGraph &graph);
+    void drawBackgroundEdges(const DynamicGraph &graph);
     void drawEdges(const DynamicGraph &graph);
     void drawPolygons(const DynamicGraph &graph);
 

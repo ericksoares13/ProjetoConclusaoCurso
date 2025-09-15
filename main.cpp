@@ -39,7 +39,9 @@ int main() {
 
     inputFile.close();
 
-    graph.addPolygon(Polygon::generateHexInGrid(graph.getUniformGrid(), 0.005));
+    graph.addPolygon(Polygon::generateHexInGrid(graph.getUniformGrid(), 0.009));
+    graph.addPolygon(Polygon::generateHexInGrid(graph.getUniformGrid(), 0.009));
+    graph.addPolygon(Polygon::generateHexInGrid(graph.getUniformGrid(), 0.009));
 
     Screen screen;
     screen.drawBackground(graph);

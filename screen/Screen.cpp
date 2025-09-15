@@ -28,7 +28,7 @@ sf::Vector2f Screen::latLonToScreen(const double lon, const double lat, const Dy
     return {static_cast<float>(x), static_cast<float>(this->windowHeight - y)};
 }
 
-void Screen::drawGrid(const DynamicGraph &graph) {
+void Screen::drawBackgroundGrid(const DynamicGraph &graph) {
     const int iMin = floor(graph.getMinLon() / graph.getCellSize());
     const int iMax = floor(graph.getMaxLon() / graph.getCellSize());
     const int jMin = floor(graph.getMinLat() / graph.getCellSize());
@@ -65,53 +65,43 @@ void Screen::drawGrid(const DynamicGraph &graph) {
     }
 }
 
-void Screen::drawPoints(const DynamicGraph &graph) {
-    for(auto &[id, point]: graph.getIdToPoint()){
-        sf::CircleShape circle(1);
-        circle.setFillColor(sf::Color::Blue);
-        const sf::Vector2f pos = latLonToScreen(point.getX(), point.getY(), graph);
-        circle.setPosition(pos.x - 1, pos.y - 1);
-        this->backgroundTexture.draw(circle);
+void Screen::drawBackgroundEdges(const DynamicGraph &graph) {
+    for (auto &[id, edges]: graph.getAdj()){
+        for (const auto &edge : edges) {
+            const sf::Vertex line[] = {
+                sf::Vertex(latLonToScreen(edge.getU()->getX(), edge.getU()->getY(), graph), sf::Color::Black),
+                sf::Vertex(latLonToScreen(edge.getV()->getX(), edge.getV()->getY(), graph), sf::Color::Black)
+            };
+            this->backgroundTexture.draw(line, 2, sf::Lines);
+        }
     }
 }
 
 void Screen::drawBackground(const DynamicGraph &graph) {
-    this->drawGrid(graph);
-    // this->drawPoints(graph);
+    this->drawBackgroundGrid(graph);
+    this->drawBackgroundEdges(graph);
 
     this->backgroundTexture.display();
     this->background.setTexture(backgroundTexture.getTexture());
 }
 
 void Screen::drawEdges(const DynamicGraph &graph) {
-    std::set<const Edge *> cellEdges;
-
     for (const auto &cell : GridHelper::getOccupiedCells(graph.getPolygons(), graph.getUniformGrid())) {
         const auto it = graph.getUniformGrid().getGrid().find(cell);
 
         if (it != graph.getUniformGrid().getGrid().end()) {
-            for (const auto &edge : it->second) {
-                if (cellEdges.contains(edge)) continue;
-
+            for (const auto edge : it->second) {
                 for (const auto &polygon : graph.getPolygons()) {
                     if (PointHelper::pointInConvexPolygon(polygon.getPoints(), *edge->getU()) ||
                         PointHelper::pointInConvexPolygon(polygon.getPoints(), *edge->getV())) {
-                        cellEdges.insert(edge);
+                        const sf::Vertex line[] = {
+                            sf::Vertex(latLonToScreen(edge->getU()->getX(), edge->getU()->getY(), graph), sf::Color::Red),
+                            sf::Vertex(latLonToScreen(edge->getV()->getX(), edge->getV()->getY(), graph), sf::Color::Red)
+                        };
+                        this->window.draw(line, 2, sf::Lines);
                     }
                 }
             }
-        }
-    }
-
-    for (auto &[id, edges]: graph.getAdj()){
-        for (auto &edge : edges) {
-            sf::Color color = cellEdges.contains(&edge) ? sf::Color::Red : sf::Color::Black;
-
-            const sf::Vertex line[] = {
-                sf::Vertex(latLonToScreen(edge.getU()->getX(), edge.getU()->getY(), graph), color),
-                sf::Vertex(latLonToScreen(edge.getV()->getX(), edge.getV()->getY(), graph), color)
-            };
-            this->window.draw(line, 2, sf::Lines);
         }
     }
 }
@@ -159,7 +149,7 @@ void Screen::processEvents() {
 }
 
 void Screen::update() {
-    constexpr float panSpeed = 5.0f;
+    constexpr float panSpeed = 0.5f;
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
         this->view.move(-panSpeed, 0);
