@@ -23,3 +23,4 @@ target_link_libraries(ProjetoConclusaoCurso PRIVATE sfml-graphics sfml-window sf
 
 configure_file(${CMAKE_SOURCE_DIR}/input1.txt ${CMAKE_BINARY_DIR}/input1.txt COPYONLY)
 configure_file(${CMAKE_SOURCE_DIR}/input2.txt ${CMAKE_BINARY_DIR}/input2.txt COPYONLY)
+configure_file(${CMAKE_SOURCE_DIR}/input3.txt ${CMAKE_BINARY_DIR}/input3.txt COPYONLY)

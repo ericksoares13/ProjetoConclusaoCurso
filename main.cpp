@@ -7,9 +7,18 @@
 #include "screen/Screen.h"
 
 int main() {
-    std::ifstream inputFile("input1.txt");
+    int inputNumber;
+    printf("Opcoes de entrada\n");
+    printf("1 - Belo Horizonte\n");
+    printf("2 - Ipatinga\n");
+    printf("3 - Viçosa\n");
+    printf("Escolha a entrada: ");
+    scanf("%d", &inputNumber);
+
+    std::string filename = "input" + std::to_string(inputNumber) + ".txt";
+    std::ifstream inputFile(filename);
     if (!inputFile.is_open()) {
-        std::cerr << "Erro ao abrir o arquivo input1.txt\n";
+        std::cerr << "Erro ao abrir o arquivo " + filename + "\n";
         return 1;
     }
 
