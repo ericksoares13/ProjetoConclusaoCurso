@@ -15,6 +15,8 @@ class Polygon {
     Point center;
 
 public:
+    static constexpr double maxMoveDistance = 0.0009;
+
     Polygon();
     explicit Polygon(const std::vector<Point>& points);
 

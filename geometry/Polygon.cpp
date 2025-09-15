@@ -18,8 +18,8 @@ bool Polygon::updatePosition(const double dx, const double dy, const UniformGrid
     const double newCenterX = this->center.getX() + dx;
     const double newCenterY = this->center.getY() + dy;
 
-    const int cellI = static_cast<int>(newCenterX / grid.getCellSize());
-    const int cellJ = static_cast<int>(newCenterY / grid.getCellSize());
+    const int cellI = static_cast<int>(floor(newCenterX / grid.getCellSize()));
+    const int cellJ = static_cast<int>(floor(newCenterY / grid.getCellSize()));
 
     if (const Cell newCell(cellI, cellJ); !grid.getGrid().contains(newCell)) {
         return false;
@@ -57,8 +57,8 @@ Polygon Polygon::generateHexInGrid(const UniformGrid &grid, const double hexRadi
     const double x0 = chosenCell.getI() * grid.getCellSize();
     const double y0 = chosenCell.getJ() * grid.getCellSize();
 
-    std::uniform_real_distribution<> distX(x0, x0 + grid.getCellSize());
-    std::uniform_real_distribution<> distY(y0, y0 + grid.getCellSize());
+    std::uniform_real_distribution<> distX(x0 + maxMoveDistance, x0 + grid.getCellSize() - maxMoveDistance);
+    std::uniform_real_distribution<> distY(y0 + maxMoveDistance, y0 + grid.getCellSize() - maxMoveDistance);
 
     const double centerX = distX(gen);
     const double centerY = distY(gen);
