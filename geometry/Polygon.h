@@ -20,9 +20,9 @@ public:
 
     const std::vector<Point>& getPoints() const;
 
-    bool updatePosition(double dx, double dy, UniformGrid &grid);
+    bool updatePosition(double dx, double dy, const UniformGrid &grid);
 
-    static Polygon generateHexInGrid(UniformGrid &grid, double hexRadius);
+    static Polygon generateHexInGrid(const UniformGrid &grid, double hexRadius);
 };
 
 

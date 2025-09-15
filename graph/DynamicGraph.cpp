@@ -39,7 +39,7 @@ void DynamicGraph::addPolygon(const Polygon &polygon) {
 void DynamicGraph::updatePolygonsPosition() {
     static std::random_device rd;
     static std::mt19937 gen(rd());
-    std::uniform_real_distribution<> dist(-0.0005, 0.0005);
+    std::uniform_real_distribution<> dist(-0.0009, 0.0009);
 
     for (auto &polygon : this->polygons) {
         bool validMove = false;

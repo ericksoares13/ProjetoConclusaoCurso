@@ -14,7 +14,7 @@ const std::vector<Point>& Polygon::getPoints() const {
     return this->points;
 }
 
-bool Polygon::updatePosition(const double dx, const double dy, UniformGrid &grid) {
+bool Polygon::updatePosition(const double dx, const double dy, const UniformGrid &grid) {
     const double newCenterX = this->center.getX() + dx;
     const double newCenterY = this->center.getY() + dy;
 
@@ -36,7 +36,7 @@ bool Polygon::updatePosition(const double dx, const double dy, UniformGrid &grid
     return true;
 }
 
-Polygon Polygon::generateHexInGrid(UniformGrid &grid, const double hexRadius) {
+Polygon Polygon::generateHexInGrid(const UniformGrid &grid, const double hexRadius) {
     std::random_device rd;
     std::mt19937 gen(rd());
 

@@ -18,7 +18,7 @@ public:
     UniformGrid() : cellSize(0.01) {}
     explicit UniformGrid(const double cellSize) : cellSize(cellSize) {}
 
-    std::unordered_map<Cell, std::vector<Edge *>, Cell::Hash> getGrid() { return this->grid; }
+    const std::unordered_map<Cell, std::vector<Edge *>, Cell::Hash> &getGrid() const { return this->grid; }
     double getCellSize() const { return this->cellSize; }
 
     void insertEdge(Edge *edge) {

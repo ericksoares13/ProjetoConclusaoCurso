@@ -3,12 +3,15 @@
 //
 
 #include "Screen.h"
+#include "../helper/GridHelper.h"
 
+#include <set>
 #include <SFML/Graphics/CircleShape.hpp>
 #include <SFML/Graphics/ConvexShape.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/Keyboard.hpp>
+
 
 Screen::Screen() {
     this->window.create(sf::VideoMode(this->windowWidth, this->windowHeight), "TCC - Erick");
@@ -25,7 +28,7 @@ sf::Vector2f Screen::latLonToScreen(const double lon, const double lat, const Dy
     return {static_cast<float>(x), static_cast<float>(this->windowHeight - y)};
 }
 
-void Screen::drawGrid(DynamicGraph &graph) {
+void Screen::drawGrid(const DynamicGraph &graph) {
     const int iMin = floor(graph.getMinLon() / graph.getCellSize());
     const int iMax = floor(graph.getMaxLon() / graph.getCellSize());
     const int jMin = floor(graph.getMinLat() / graph.getCellSize());
@@ -49,7 +52,7 @@ void Screen::drawGrid(DynamicGraph &graph) {
             sf::RectangleShape cellShape(sf::Vector2f(bottomRight.x - topLeft.x, bottomRight.y - topLeft.y));
             cellShape.setPosition(topLeft);
 
-            if (!graph.getUniformGrid().getGrid().contains(c) || graph.getUniformGrid().getGrid()[c].empty()) {
+            if (!graph.getUniformGrid().getGrid().contains(c) || graph.getUniformGrid().getGrid().find(c)->second.empty()) {
                 cellShape.setFillColor(sf::Color(255, 200, 200, 200));
             } else {
                 cellShape.setFillColor(sf::Color::Transparent);
@@ -72,24 +75,43 @@ void Screen::drawPoints(const DynamicGraph &graph) {
     }
 }
 
-void Screen::drawBackground(DynamicGraph &graph) {
+void Screen::drawBackground(const DynamicGraph &graph) {
     this->drawGrid(graph);
-    this->drawPoints(graph);
+    // this->drawPoints(graph);
 
     this->backgroundTexture.display();
     this->background.setTexture(backgroundTexture.getTexture());
 }
 
 void Screen::drawEdges(const DynamicGraph &graph) {
-    for (auto &[id, edges]: graph.getAdj()){
-        for (const auto &edge : edges) {
-            if (edge.isValid()) {
-                const sf::Vertex line[] = {
-                    sf::Vertex(latLonToScreen(edge.getU()->getX(), edge.getU()->getY(), graph), sf::Color::Black),
-                    sf::Vertex(latLonToScreen(edge.getV()->getX(), edge.getV()->getY(), graph), sf::Color::Black)
-                };
-                this->window.draw(line,2,sf::Lines);
+    std::set<const Edge *> cellEdges;
+
+    for (const auto &cell : GridHelper::getOccupiedCells(graph.getPolygons(), graph.getUniformGrid())) {
+        const auto it = graph.getUniformGrid().getGrid().find(cell);
+
+        if (it != graph.getUniformGrid().getGrid().end()) {
+            for (const auto &edge : it->second) {
+                if (cellEdges.contains(edge)) continue;
+
+                for (const auto &polygon : graph.getPolygons()) {
+                    if (PointHelper::pointInConvexPolygon(polygon.getPoints(), *edge->getU()) ||
+                        PointHelper::pointInConvexPolygon(polygon.getPoints(), *edge->getV())) {
+                        cellEdges.insert(edge);
+                    }
+                }
             }
+        }
+    }
+
+    for (auto &[id, edges]: graph.getAdj()){
+        for (auto &edge : edges) {
+            sf::Color color = cellEdges.contains(&edge) ? sf::Color::Red : sf::Color::Black;
+
+            const sf::Vertex line[] = {
+                sf::Vertex(latLonToScreen(edge.getU()->getX(), edge.getU()->getY(), graph), color),
+                sf::Vertex(latLonToScreen(edge.getV()->getX(), edge.getV()->getY(), graph), color)
+            };
+            this->window.draw(line, 2, sf::Lines);
         }
     }
 }
@@ -106,9 +128,9 @@ void Screen::drawPolygons(const DynamicGraph &graph) {
             shape.setPoint(i, pos);
         }
 
-        shape.setFillColor(sf::Color::Green);
-        shape.setOutlineColor(sf::Color::Black);
-        shape.setOutlineThickness(1.0f);
+        shape.setFillColor(sf::Color::Transparent);
+        shape.setOutlineColor(sf::Color::Green);
+        shape.setOutlineThickness(2.0f);
 
         this->window.draw(shape);
     }
@@ -137,7 +159,7 @@ void Screen::processEvents() {
 }
 
 void Screen::update() {
-    constexpr float panSpeed = 0.05f;
+    constexpr float panSpeed = 5.0f;
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
         this->view.move(-panSpeed, 0);

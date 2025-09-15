@@ -4,13 +4,12 @@
 
 #include "geometry/Polygon.h"
 #include "graph/DynamicGraph.h"
-#include "helper/GridHelper.h"
 #include "screen/Screen.h"
 
 int main() {
-    std::ifstream inputFile("input.txt");
+    std::ifstream inputFile("input1.txt");
     if (!inputFile.is_open()) {
-        std::cerr << "Erro ao abrir o arquivo input.txt\n";
+        std::cerr << "Erro ao abrir o arquivo input1.txt\n";
         return 1;
     }
 
@@ -49,7 +48,6 @@ int main() {
         screen.processEvents();
         screen.update();
         screen.render(graph);
-        GridHelper::getOccupiedCells(graph.getPolygons(), graph.getUniformGrid());
         graph.updatePolygonsPosition();
     }
 

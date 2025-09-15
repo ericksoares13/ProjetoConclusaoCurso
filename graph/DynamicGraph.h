@@ -4,6 +4,7 @@
 
 #ifndef PROJETOCONCLUSAOCURSO_DYNAMIC_GRAPH_H
 #define PROJETOCONCLUSAOCURSO_DYNAMIC_GRAPH_H
+#include <list>
 #include <unordered_map>
 #include <vector>
 
@@ -17,7 +18,7 @@ class Polygon;
 
 class DynamicGraph {
     std::unordered_map<long long, Point> idToPoint;
-    std::unordered_map<long long, std::vector<Edge>> adj;
+    std::unordered_map<long long, std::list<Edge>> adj;
     std::vector<Polygon> polygons;
     UniformGrid uniformGrid;
     double cellSize;
@@ -38,9 +39,9 @@ public:
     void updatePolygonsPosition();
 
     const std::unordered_map<long long, Point> &getIdToPoint() const { return this->idToPoint; }
-    const std::unordered_map<long long, std::vector<Edge>> &getAdj() const { return this->adj; }
+    const std::unordered_map<long long, std::list<Edge>> &getAdj() const { return this->adj; }
     const std::vector<Polygon> &getPolygons() const { return this->polygons; }
-    UniformGrid &getUniformGrid() { return this->uniformGrid; }
+    const UniformGrid &getUniformGrid() const { return this->uniformGrid; }
     double getCellSize() const { return this->cellSize; }
     double getMinLon() const { return this->minLon; }
     double getMaxLon() const { return this->maxLon; }
