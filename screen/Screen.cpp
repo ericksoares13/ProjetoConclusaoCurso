@@ -126,6 +126,66 @@ void Screen::drawPolygons(const DynamicGraph &graph) {
     }
 }
 
+void Screen::drawAgents(const DynamicGraph& graph, const std::vector<Agent*>& agents) {
+    for (auto &agent : agents) {
+        if (agent->getPath().size() < 2) continue;
+
+        sf::Color pathColor = agent->getType() == Agent::Dynamic ? sf::Color::Magenta : sf::Color::Blue;
+
+        for (size_t i = 0; i < agent->getPath().size() - 1; i++) {
+            long long id1 = agent->getPath()[i];
+            long long id2 = agent->getPath()[i + 1];
+
+            const Point* p1 = &graph.getIdToPoint().at(id1);
+            const Point* p2 = &graph.getIdToPoint().at(id2);
+
+            sf::RectangleShape pathSegment;
+            sf::Vector2f start = latLonToScreen(p1->getX(), p1->getY(), graph);
+            sf::Vector2f end = latLonToScreen(p2->getX(), p2->getY(), graph);
+
+            sf::Vector2f direction = end - start;
+            float length = std::sqrt(direction.x * direction.x + direction.y * direction.y);
+            direction /= length;
+
+            pathSegment.setSize(sf::Vector2f(length, 3.0f));
+            pathSegment.setPosition(start);
+            pathSegment.setRotation(std::atan2(direction.y, direction.x) * 180 / M_PI);
+            pathSegment.setFillColor(pathColor);
+
+            this->window.draw(pathSegment);
+        }
+    }
+
+    for (auto &agent : agents) {
+        sf::CircleShape agentShape(6.0f);
+        sf::Vector2f screenPos = latLonToScreen(agent->getCurrentPosition().getX(), agent->getCurrentPosition().getY(), graph);
+        agentShape.setPosition(screenPos.x - 6, screenPos.y - 6);
+
+        sf::Color agentColor = agent->getType() == Agent::Dynamic ? sf::Color::Red : sf::Color::Cyan;
+        agentShape.setFillColor(agentColor);
+        agentShape.setOutlineColor(sf::Color::Black);
+        agentShape.setOutlineThickness(1.0f);
+
+        this->window.draw(agentShape);
+    }
+
+    const long long destId = agents[0]->getEndId();
+    if (destId == -1 || !graph.getIdToPoint().contains(destId)) {
+        return;
+    }
+
+    const Point& dest = graph.getIdToPoint().at(destId);
+    const sf::Vector2f screenPos = latLonToScreen(dest.getX(), dest.getY(), graph);
+
+    sf::CircleShape destShape(8.0f);
+    destShape.setPosition(screenPos.x - 8, screenPos.y - 8);
+    destShape.setFillColor(sf::Color::Green);
+    destShape.setOutlineColor(sf::Color::Black);
+    destShape.setOutlineThickness(2.0f);
+
+    this->window.draw(destShape);
+}
+
 bool Screen::windowIsOpen() const {
     return this->window.isOpen();
 }
@@ -170,10 +230,11 @@ void Screen::update() {
     this->window.setView(this->view);
 }
 
-void Screen::render(const DynamicGraph &graph) {
+void Screen::render(const DynamicGraph &graph, const std::vector<Agent*>& agents) {
     this->window.clear(sf::Color::White);
     this->window.draw(this->background);
     this->drawEdges(graph);
     this->drawPolygons(graph);
+    this->drawAgents(graph, agents);
     this->window.display();
 }

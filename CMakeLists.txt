@@ -17,7 +17,9 @@ add_executable(ProjetoConclusaoCurso main.cpp
         screen/Screen.cpp
         screen/Screen.h
         helper/PointHelper.h
-        helper/GridHelper.h)
+        helper/GridHelper.h
+        screen/Agent.cpp
+        screen/Agent.h)
 
 target_link_libraries(ProjetoConclusaoCurso PRIVATE sfml-graphics sfml-window sfml-system)
 

@@ -42,6 +42,16 @@ public:
 
         return c1 >= -EPS && c2 >= -EPS && (c - c1 - c2) >= -EPS;
     }
+
+    static double euclideanDistance(const Point& p1, const Point& p2) {
+        const double dx = p1.getX() - p2.getX();
+        const double dy = p1.getY() - p2.getY();
+        return std::sqrt(dx * dx + dy * dy);
+    }
+
+    static double manhattanDistance(const Point& p1, const Point& p2) {
+        return std::abs(p1.getX() - p2.getX()) + std::abs(p1.getY() - p2.getY());
+    }
 };
 
 

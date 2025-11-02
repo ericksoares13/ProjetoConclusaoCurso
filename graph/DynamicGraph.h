@@ -23,11 +23,33 @@ class DynamicGraph {
     UniformGrid uniformGrid;
     double cellSize;
 
-
     double minLon;
     double maxLon;
     double minLat;
     double maxLat;
+
+    struct DijkstraNode {
+        long long id;
+        double distance;
+
+        DijkstraNode(const long long id, const double distance) : id(id), distance(distance) {}
+
+        bool operator>(const DijkstraNode& other) const {
+            return distance > other.distance;
+        }
+    };
+
+    struct AStarNode {
+        long long id;
+        double gCost;
+        double fCost;
+
+        AStarNode(const long long id, const double gCost, const double fCost) : id(id), gCost(gCost), fCost(fCost) {}
+
+        bool operator>(const AStarNode& other) const {
+            return fCost > other.fCost;
+        }
+    };
 
 public:
     DynamicGraph();
@@ -37,6 +59,10 @@ public:
     void addPolygon(const Polygon &polygon);
 
     void updatePolygonsPosition();
+    std::vector<long long> findPathDijkstra(long long idU, long long idV);
+    long long nextPointConsideringPolygonsDijkstra(long long idU, long long idV);
+    std::vector<long long> findPathAStar(long long idU, long long idV);
+    long long nextPointConsideringPolygonsAStar(long long idU, long long idV);
 
     const std::unordered_map<long long, Point> &getIdToPoint() const { return this->idToPoint; }
     const std::unordered_map<long long, std::list<Edge>> &getAdj() const { return this->adj; }

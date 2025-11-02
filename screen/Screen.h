@@ -9,6 +9,7 @@
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/System/Vector2.hpp>
 
+#include "Agent.h"
 #include "../graph/DynamicGraph.h"
 
 
@@ -26,6 +27,7 @@ class Screen {
     void drawBackgroundEdges(const DynamicGraph &graph);
     void drawEdges(const DynamicGraph &graph);
     void drawPolygons(const DynamicGraph &graph);
+    void drawAgents(const DynamicGraph& graph, const std::vector<Agent*>& agents);
 
 public:
     Screen();
@@ -34,7 +36,7 @@ public:
     bool windowIsOpen() const;
     void processEvents();
     void update();
-    void render(const DynamicGraph &graph);
+    void render(const DynamicGraph &graph, const std::vector<Agent*>& agents);
 };
 
 

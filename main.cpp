@@ -1,9 +1,9 @@
 #include <fstream>
 #include <iostream>
-#include <SFML/Graphics.hpp>
 
 #include "geometry/Polygon.h"
 #include "graph/DynamicGraph.h"
+#include "screen/Agent.h"
 #include "screen/Screen.h"
 
 int main() {
@@ -55,11 +55,39 @@ int main() {
     Screen screen;
     screen.drawBackground(graph);
 
-    while (screen.windowIsOpen()){
+    std::vector<Agent*> agents = Agent::initAgents(graph);
+
+    bool simulationRunning = true;
+
+    while (screen.windowIsOpen() && simulationRunning) {
         screen.processEvents();
         screen.update();
-        screen.render(graph);
         graph.updatePolygonsPosition();
+
+        bool allAgentsArrived = true;
+        for (auto &agent : agents) {
+            agent->move(graph);
+
+            if (agent->getCurrentId() != agent->getEndId()) {
+                allAgentsArrived = false;
+            }
+        }
+
+        if (allAgentsArrived) {
+            simulationRunning = false;
+        }
+
+        screen.render(graph, agents);
+    }
+
+    while (screen.windowIsOpen()) {
+        screen.processEvents();
+        screen.update();
+        screen.render(graph, agents);
+    }
+
+    for (auto agent : agents) {
+        delete agent;
     }
 
     return 0;
