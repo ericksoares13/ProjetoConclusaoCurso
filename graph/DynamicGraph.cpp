@@ -49,10 +49,19 @@ void DynamicGraph::updatePolygonsPosition() {
         int attempts = 0;
 
         while (!validMove && attempts < 10) {
-            const double dx = dist(gen);
-            const double dy = dist(gen);
+            const double ax = dist(gen) * Polygon::acceleration;
+            const double ay = dist(gen) * Polygon::acceleration;
 
-            validMove = polygon.updatePosition(dx, dy, this->getUniformGrid());
+            polygon.setVelocityX(Polygon::inertia * polygon.getVelocityX() + ax);
+            polygon.setVelocityY(Polygon::inertia * polygon.getVelocityY() + ay);
+
+            const double speed = std::sqrt(polygon.getVelocityX() * polygon.getVelocityX() + polygon.getVelocityY() * polygon.getVelocityY());
+            if (speed > Polygon::maxMoveDistance) {
+                polygon.setVelocityX(polygon.getVelocityX() * (Polygon::maxMoveDistance / speed));
+                polygon.setVelocityY(polygon.getVelocityY() * (Polygon::maxMoveDistance / speed));
+            }
+
+            validMove = polygon.updatePosition(polygon.getVelocityX(), polygon.getVelocityY(), this->getUniformGrid());
             attempts++;
         }
     }

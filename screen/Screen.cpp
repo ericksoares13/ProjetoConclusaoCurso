@@ -169,6 +169,8 @@ void Screen::drawAgents(const DynamicGraph& graph, const std::vector<Agent*>& ag
         this->window.draw(agentShape);
     }
 
+    if (agents.empty()) return;
+
     const long long destId = agents[0]->getEndId();
     if (destId == -1 || !graph.getIdToPoint().contains(destId)) {
         return;

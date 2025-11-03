@@ -10,10 +10,6 @@ Polygon::Polygon() = default;
 
 Polygon::Polygon(const std::vector<Point> &points) : points(points) {}
 
-const std::vector<Point>& Polygon::getPoints() const {
-    return this->points;
-}
-
 bool Polygon::updatePosition(const double dx, const double dy, const UniformGrid &grid) {
     const double newCenterX = this->center.getX() + dx;
     const double newCenterY = this->center.getY() + dy;
