@@ -7,15 +7,7 @@
 #include "screen/Screen.h"
 
 int main() {
-    int inputNumber;
-    printf("Opcoes de entrada\n");
-    printf("1 - Belo Horizonte\n");
-    printf("2 - Ipatinga\n");
-    printf("3 - Viçosa\n");
-    printf("Escolha a entrada: ");
-    scanf("%d", &inputNumber);
-
-    std::string filename = "input" + std::to_string(inputNumber) + ".txt";
+    std::string filename = "input1.txt";
     std::ifstream inputFile(filename);
     if (!inputFile.is_open()) {
         std::cerr << "Erro ao abrir o arquivo " + filename + "\n";
@@ -51,43 +43,47 @@ int main() {
     graph.addPolygon(Polygon::generateHexInGrid(graph.getUniformGrid(), 0.009));
     graph.addPolygon(Polygon::generateHexInGrid(graph.getUniformGrid(), 0.009));
     graph.addPolygon(Polygon::generateHexInGrid(graph.getUniformGrid(), 0.009));
+    graph.addPolygon(Polygon::generateHexInGrid(graph.getUniformGrid(), 0.009));
+    graph.addPolygon(Polygon::generateHexInGrid(graph.getUniformGrid(), 0.009));
 
     Screen screen;
     screen.drawBackground(graph);
 
-    std::vector<Agent*> agents = Agent::initAgents(graph);
+    for (int i = 0; i < 100; i++) {
+        std::vector<Agent*> agents = Agent::initAgents(graph);
 
-    bool simulationRunning = true;
+        bool simulationRunning = true;
 
-    while (screen.windowIsOpen() && simulationRunning) {
-        screen.processEvents();
-        screen.update();
-        graph.updatePolygonsPosition();
+        while (screen.windowIsOpen() && simulationRunning) {
+            screen.processEvents();
+            screen.update();
+            graph.updatePolygonsPosition();
 
-        bool allAgentsArrived = true;
-        for (auto &agent : agents) {
-            agent->move(graph);
+            bool allAgentsArrived = true;
+            for (auto &agent : agents) {
+                agent->move(graph);
 
-            if (agent->getCurrentId() != agent->getEndId()) {
-                allAgentsArrived = false;
+                if (agent->getCurrentId() != agent->getEndId()) {
+                    allAgentsArrived = false;
+                }
             }
+
+            if (allAgentsArrived) {
+                simulationRunning = false;
+            }
+
+            screen.render(graph, agents);
         }
 
-        if (allAgentsArrived) {
-            simulationRunning = false;
+        for (auto agent : agents) {
+            delete agent;
         }
-
-        screen.render(graph, agents);
     }
 
     while (screen.windowIsOpen()) {
         screen.processEvents();
         screen.update();
-        screen.render(graph, agents);
-    }
-
-    for (auto agent : agents) {
-        delete agent;
+        screen.render(graph, {});
     }
 
     return 0;
