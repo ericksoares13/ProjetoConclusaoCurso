@@ -52,6 +52,26 @@ public:
     static double manhattanDistance(const Point& p1, const Point& p2) {
         return std::abs(p1.getX() - p2.getX()) + std::abs(p1.getY() - p2.getY());
     }
+
+    static double haversineDistance(const Point& p1, const Point& p2) {
+        constexpr double R = 6371.0;
+
+        const double lat1 = p1.getY() * M_PI / 180.0;
+        const double lon1 = p1.getX() * M_PI / 180.0;
+        const double lat2 = p2.getY() * M_PI / 180.0;
+        const double lon2 = p2.getX() * M_PI / 180.0;
+
+        const double dLat = lat2 - lat1;
+        const double dLon = lon2 - lon1;
+
+        const double a = std::sin(dLat / 2) * std::sin(dLat / 2) +
+                         std::cos(lat1) * std::cos(lat2) *
+                         std::sin(dLon / 2) * std::sin(dLon / 2);
+
+        const double c = 2 * std::atan2(std::sqrt(a), std::sqrt(1 - a));
+
+        return R * c;
+    }
 };
 
 

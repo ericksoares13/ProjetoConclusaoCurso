@@ -247,7 +247,7 @@ std::vector<long long> DynamicGraph::findPathAStar(const long long idU, const lo
                 gCosts[v] = newGCost;
                 previous[v] = u;
 
-                const double hCost = PointHelper::euclideanDistance(this->idToPoint.at(v), target);
+                const double hCost = PointHelper::haversineDistance(this->idToPoint.at(v), target);
                 const double fCost = newGCost + hCost;
 
                 pq.emplace(v, newGCost, fCost);
@@ -286,7 +286,7 @@ long long DynamicGraph::nextPointConsideringPolygonsAStar(const long long idU, c
     }
 
     gCosts[idU] = 0.0;
-    double initialHCost = PointHelper::euclideanDistance(this->idToPoint.at(idU), target);
+    double initialHCost = PointHelper::haversineDistance(this->idToPoint.at(idU), target);
     pq.emplace(idU, 0.0, initialHCost);
 
     while (!pq.empty()) {
