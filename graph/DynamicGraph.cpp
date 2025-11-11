@@ -134,7 +134,7 @@ std::vector<long long> DynamicGraph::findPathAStar(const long long idU, const lo
     return path;
 }
 
-std::vector<long long> DynamicGraph:findPathAStarConsideringPolygons(const long long idU, const long long idV) {
+std::vector<long long> DynamicGraph::findPathAStarConsideringPolygons(const long long idU, const long long idV) {
     std::vector<long long> path;
 
     if (!this->idToPoint.contains(idU) || !this->idToPoint.contains(idV)) {
@@ -199,7 +199,7 @@ std::vector<long long> DynamicGraph:findPathAStarConsideringPolygons(const long 
                 gCosts[v] = newGCost;
                 previous[v] = u;
 
-                const double hCost = PointHelper::euclideanDistance(this->idToPoint.at(v), target);
+                const double hCost = PointHelper::haversineDistance(this->idToPoint.at(v), target);
                 const double fCost = newGCost + hCost;
 
                 pq.emplace(v, newGCost, fCost);
