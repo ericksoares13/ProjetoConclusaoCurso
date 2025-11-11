@@ -18,7 +18,9 @@ Agent::Agent(DynamicGraph& graph, const Type type, const Point &currentPosition,
     pathStaticAgentId(0),
     pathStaticAgent(std::vector<long long>()) {
     if (type == Static) {
-        pathStaticAgent = graph.findPathAStar(startId, endId);
+        this->pathStaticAgent = graph.findPathAStar(startId, endId);
+    } else {
+        this->pathStaticAgent = graph.findPathAStarConsideringPolygons(startId, endId);
     }
 }
 
@@ -67,8 +69,36 @@ void Agent::setCurrentId(const DynamicGraph& graph, long long id) {
 void Agent::move(DynamicGraph& graph) {
     if (this->currentId == this->endId) return;
 
-    long long nextPointId;
-    if (this->type == Static) {
+    long long nextPointId = -1;
+    if (this->type == Dynamic) {
+        if (!pathStaticAgent.empty()) {
+            for (int i = this->pathStaticAgentId; i < this->pathStaticAgent.size(); i++) {
+                nextPointId = this->pathStaticAgent[i];
+                const Point& nextPoint = graph.getIdToPoint().at(nextPointId);
+                bool validPath = true;
+
+                for (const Polygon& polygon : graph.getPolygons()) {
+                    if (PointHelper::pointInConvexPolygon(polygon.getPoints(), nextPoint)) {
+                        this->pathStaticAgent = graph.findPathAStarConsideringPolygons(this->currentId, this->endId);
+                        this->pathStaticAgentId = 0;
+                        validPath = false;
+                        nextPointId = -1;
+                        break;
+                    }
+                }
+
+                if (!validPath) {
+                    break;
+                }
+            }
+        } else {
+            this->pathStaticAgent = graph.findPathAStarConsideringPolygons(this->currentId, this->endId);
+            this->pathStaticAgentId = 0;
+            nextPointId = -1;
+        }
+    }
+
+    if (!this->pathStaticAgent.empty()) {
         nextPointId = this->pathStaticAgent[this->pathStaticAgentId];
         const Point& currentPoint = graph.getIdToPoint().at(this->currentId);
         const Point& nextPoint = graph.getIdToPoint().at(nextPointId);
@@ -86,8 +116,6 @@ void Agent::move(DynamicGraph& graph) {
         if (validPath) {
             this->pathStaticAgentId++;
         }
-    } else {
-        nextPointId = graph.nextPointConsideringPolygonsAStar(this->currentId, this->endId);
     }
 
     if (nextPointId != -1) {

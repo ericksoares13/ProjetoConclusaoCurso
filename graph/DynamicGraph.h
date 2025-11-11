@@ -59,10 +59,8 @@ public:
     void addPolygon(const Polygon &polygon);
 
     void updatePolygonsPosition();
-    std::vector<long long> findPathDijkstra(long long idU, long long idV);
-    long long nextPointConsideringPolygonsDijkstra(long long idU, long long idV);
     std::vector<long long> findPathAStar(long long idU, long long idV);
-    long long nextPointConsideringPolygonsAStar(long long idU, long long idV);
+    std::vector<long long> findPathAStarConsideringPolygons(long long idU, long long idV);
 
     const std::unordered_map<long long, Point> &getIdToPoint() const { return this->idToPoint; }
     const std::unordered_map<long long, std::list<Edge>> &getAdj() const { return this->adj; }

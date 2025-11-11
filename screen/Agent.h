@@ -23,7 +23,7 @@ private:
     long long endId;
 
     std::vector<long long> pathStaticAgent;
-    long long pathStaticAgentId;
+    int pathStaticAgentId;
 
     explicit Agent(DynamicGraph &graph, Type type, const Point &currentPosition, long long startId,
                    long long endId);

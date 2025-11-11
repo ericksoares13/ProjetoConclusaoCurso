@@ -67,141 +67,6 @@ void DynamicGraph::updatePolygonsPosition() {
     }
 }
 
-std::vector<long long> DynamicGraph::findPathDijkstra(const long long idU, const long long idV) {
-    std::vector<long long> path;
-
-    if (!this->idToPoint.contains(idU) || !this->idToPoint.contains(idV)) {
-        return path;
-    }
-
-    std::unordered_map<long long, double> distances;
-    std::unordered_map<long long, long long> previous;
-    std::priority_queue<DijkstraNode, std::vector<DijkstraNode>, std::greater<>> pq;
-
-    for (const auto& [id, point] : this->idToPoint) {
-        distances[id] = std::numeric_limits<double>::infinity();
-        previous[id] = -1;
-    }
-
-    distances[idU] = 0.0;
-    pq.emplace(idU, 0.0);
-
-    while (!pq.empty()) {
-        const DijkstraNode current = pq.top();
-        pq.pop();
-
-        const long long u = current.id;
-        const double distU = current.distance;
-
-        if (u == idV) {
-            break;
-        }
-
-        if (distU > distances[u]) {
-            continue;
-        }
-
-        for (const Edge& edge : this->adj[u]) {
-            const long long v = edge.getV()->getId();
-            const double weight = edge.getDist();
-            const double newDist = distances[u] + weight;
-
-            if (newDist < distances[v]) {
-                distances[v] = newDist;
-                previous[v] = u;
-                pq.emplace(v, newDist);
-            }
-        }
-    }
-
-    if (distances[idV] == std::numeric_limits<double>::infinity()) {
-        return path;
-    }
-
-    long long current = idV;
-    while (current != idU && previous.at(current) != -1) {
-        path.push_back(current);
-        current = previous.at(current);
-    }
-
-    std::reverse(path.begin(), path.end());
-    return path;
-}
-
-long long DynamicGraph::nextPointConsideringPolygonsDijkstra(const long long idU, const long long idV) {
-    if (!this->idToPoint.contains(idU) || !this->idToPoint.contains(idV)) {
-        return -1;
-    }
-
-    std::unordered_map<long long, double> distances;
-    std::unordered_map<long long, long long> previous;
-    std::priority_queue<DijkstraNode, std::vector<DijkstraNode>, std::greater<>> pq;
-
-    for (const auto& [id, point] : this->idToPoint) {
-        distances[id] = std::numeric_limits<double>::infinity();
-        previous[id] = -1;
-    }
-
-    distances[idU] = 0.0;
-    pq.emplace(idU, 0.0);
-
-    while (!pq.empty()) {
-        const DijkstraNode current = pq.top();
-        pq.pop();
-
-        const long long u = current.id;
-        const double distU = current.distance;
-
-        if (u == idV) {
-            break;
-        }
-
-        if (distU > distances[u]) {
-            continue;
-        }
-
-        for (const Edge& edge : this->adj[u]) {
-            const long long v = edge.getV()->getId();
-            const double weight = edge.getDist();
-
-            bool edgeIntersectsPolygon = false;
-            for (const Polygon& polygon : this->polygons) {
-                if (PointHelper::pointInConvexPolygon(polygon.getPoints(), *edge.getU()) ||
-                    PointHelper::pointInConvexPolygon(polygon.getPoints(), *edge.getV())) {
-                    edgeIntersectsPolygon = true;
-                    break;
-                }
-            }
-
-            if (edgeIntersectsPolygon) {
-                continue;
-            }
-
-            const double newDist = distances[u] + weight;
-
-            if (newDist < distances[v]) {
-                distances[v] = newDist;
-                previous[v] = u;
-                pq.emplace(v, newDist);
-            }
-        }
-    }
-
-    if (distances[idV] == std::numeric_limits<double>::infinity()) {
-        return -1;
-    }
-
-    long long current = idV;
-    long long next = -1;
-
-    while (current != idU && previous[current] != -1) {
-        next = current;
-        current = previous[current];
-    }
-
-    return next;
-}
-
 std::vector<long long> DynamicGraph::findPathAStar(const long long idU, const long long idV) {
     std::vector<long long> path;
 
@@ -221,7 +86,7 @@ std::vector<long long> DynamicGraph::findPathAStar(const long long idU, const lo
     }
 
     gCosts[idU] = 0.0;
-    double initialHCost = PointHelper::euclideanDistance(this->idToPoint.at(idU), target);
+    double initialHCost = PointHelper::haversineDistance(this->idToPoint.at(idU), target);
     pq.emplace(idU, 0.0, initialHCost);
 
     while (!pq.empty()) {
@@ -269,12 +134,20 @@ std::vector<long long> DynamicGraph::findPathAStar(const long long idU, const lo
     return path;
 }
 
-long long DynamicGraph::nextPointConsideringPolygonsAStar(const long long idU, const long long idV) {
+std::vector<long long> DynamicGraph:findPathAStarConsideringPolygons(const long long idU, const long long idV) {
+    std::vector<long long> path;
+
     if (!this->idToPoint.contains(idU) || !this->idToPoint.contains(idV)) {
-        return -1;
+        return path;
     }
 
     const Point& target = this->idToPoint.at(idV);
+
+    for (const Polygon& polygon : this->polygons) {
+        if (PointHelper::pointInConvexPolygon(polygon.getPoints(), target)) {
+            return findPathAStar(idU, idV);
+        }
+    }
 
     std::unordered_map<long long, double> gCosts;
     std::unordered_map<long long, long long> previous;
@@ -335,16 +208,15 @@ long long DynamicGraph::nextPointConsideringPolygonsAStar(const long long idU, c
     }
 
     if (!previous.contains(idV) || previous.at(idV) == -1) {
-        return -1;
+        return path;
     }
 
     long long current = idV;
-    long long next = -1;
-
     while (current != idU && previous.at(current) != -1) {
-        next = current;
+        path.push_back(current);
         current = previous.at(current);
     }
 
-    return next;
+    std::reverse(path.begin(), path.end());
+    return path;
 }
