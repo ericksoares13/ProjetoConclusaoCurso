@@ -3,6 +3,7 @@
 //
 
 #include "Agent.h"
+#include "../helper/GridHelper.h"
 #include "../helper/PointHelper.h"
 
 #include <random>
@@ -46,7 +47,12 @@ std::pair<long long, long long> Agent::chooseRandomStartAndEnd(const DynamicGrap
 }
 
 std::vector<Agent*> Agent::initAgents(DynamicGraph& graph) {
-    auto [startId, endId] = chooseRandomStartAndEnd(graph);
+    long long startId;
+    long long endId;
+
+    do {
+        std::tie(startId, endId) = chooseRandomStartAndEnd(graph);
+    } while (graph.findPathAStar(startId, endId).empty());
 
     auto* dynamicAgent = new Agent(graph, Dynamic, graph.getIdToPoint().at(startId), startId, endId);
     auto* staticAgent = new Agent(graph, Static, graph.getIdToPoint().at(startId), startId, endId);
@@ -66,35 +72,80 @@ void Agent::setCurrentId(const DynamicGraph& graph, long long id) {
     this->currentPosition = graph.getIdToPoint().at(id);
 }
 
+void Agent::updateOccupiedCellsCache(const DynamicGraph& graph) {
+    bool changed = false;
+
+    const auto& polygons = graph.getPolygons();
+
+    for (int i = 0; i < polygons.size(); i++) {
+        const Polygon& poly = polygons[i];
+        auto newCells = GridHelper::getOccupiedCells(poly, graph.getUniformGrid());
+
+        const auto it = this->polygonToCellsCache.find(i);
+        if (it == this->polygonToCellsCache.end() || it->second != newCells) {
+            this->polygonToCellsCache[i] = std::move(newCells);
+            changed = true;
+        }
+    }
+
+    if (changed) {
+        this->lastOccupiedCells.clear();
+
+        for (const auto& [id, cells] : this->polygonToCellsCache) {
+            this->lastOccupiedCells.insert(cells.begin(), cells.end());
+        }
+    }
+}
+
+bool Agent::isPointSafeCache(const Point& point, const DynamicGraph& graph) {
+    const Cell pointCell = GridHelper::getCellPoint(point, graph.getUniformGrid().getCellSize());
+
+    if (!this->lastOccupiedCells.contains(pointCell)) {
+        return true;
+    }
+
+    for (const Polygon& polygon : graph.getPolygons()) {
+        if (PointHelper::pointInConvexPolygon(polygon.getPoints(), point)) {
+            this->lastIntersectionCell = pointCell;
+            this->hasLastIntersection = true;
+            return false;
+        }
+    }
+
+    this->hasLastIntersection = false;
+    return true;
+}
+
 void Agent::move(DynamicGraph& graph) {
     if (this->currentId == this->endId) return;
 
     long long nextPointId = -1;
+
     if (this->type == Dynamic) {
-        if (!pathStaticAgent.empty()) {
+        bool currentPathValid = !this->pathStaticAgent.empty();
+
+        if (currentPathValid) {
+            this->updateOccupiedCellsCache(graph);
+
             for (int i = this->pathStaticAgentId; i < this->pathStaticAgent.size(); i++) {
                 nextPointId = this->pathStaticAgent[i];
-                const Point& nextPoint = graph.getIdToPoint().at(nextPointId);
-                bool validPath = true;
+                const Cell pointCell = GridHelper::getCellPoint(graph.getIdToPoint().at(nextPointId), graph.getUniformGrid().getCellSize());
 
-                for (const Polygon& polygon : graph.getPolygons()) {
-                    if (PointHelper::pointInConvexPolygon(polygon.getPoints(), nextPoint)) {
-                        this->pathStaticAgent = graph.findPathAStarConsideringPolygons(this->currentId, this->endId);
-                        this->pathStaticAgentId = 0;
-                        validPath = false;
-                        nextPointId = -1;
-                        break;
-                    }
+                if (this->hasLastIntersection && this->lastIntersectionCell == pointCell) {
+                    break;
                 }
 
-                if (!validPath) {
+                if (!isPointSafeCache(graph.getIdToPoint().at(nextPointId), graph)) {
+                    currentPathValid = false;
+                    nextPointId = -1;
                     break;
                 }
             }
-        } else {
+        }
+
+        if (!currentPathValid) {
             this->pathStaticAgent = graph.findPathAStarConsideringPolygons(this->currentId, this->endId);
             this->pathStaticAgentId = 0;
-            nextPointId = -1;
         }
     }
 
@@ -110,7 +161,7 @@ void Agent::move(DynamicGraph& graph) {
                 nextPointId = -1;
                 validPath = false;
                 break;
-                }
+            }
         }
 
         if (validPath) {
@@ -123,4 +174,3 @@ void Agent::move(DynamicGraph& graph) {
         this->setCurrentId(graph, nextPointId);
     }
 }
-

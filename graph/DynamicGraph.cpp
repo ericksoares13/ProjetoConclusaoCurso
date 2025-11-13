@@ -208,7 +208,7 @@ std::vector<long long> DynamicGraph::findPathAStarConsideringPolygons(const long
     }
 
     if (!previous.contains(idV) || previous.at(idV) == -1) {
-        return path;
+        return findPathAStar(idU, idV);
     }
 
     long long current = idV;

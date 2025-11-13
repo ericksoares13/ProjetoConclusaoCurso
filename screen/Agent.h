@@ -4,6 +4,8 @@
 
 #ifndef PROJETOCONCLUSAOCURSO_AGENT_H
 #define PROJETOCONCLUSAOCURSO_AGENT_H
+#include <boost/functional/hash.hpp>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -25,10 +27,19 @@ private:
     std::vector<long long> pathStaticAgent;
     int pathStaticAgentId;
 
+    std::unordered_set<Cell, Cell::Hash> lastOccupiedCells;
+    std::unordered_map<size_t, std::unordered_set<Cell, Cell::Hash>> polygonToCellsCache;
+
+    Cell lastIntersectionCell;
+    bool hasLastIntersection;
+
     explicit Agent(DynamicGraph &graph, Type type, const Point &currentPosition, long long startId,
                    long long endId);
 
     static std::pair<long long, long long> chooseRandomStartAndEnd(const DynamicGraph& graph);
+
+    bool isPointSafeCache(const Point& point, const DynamicGraph& graph);
+    void updateOccupiedCellsCache(const DynamicGraph& graph);
 
 public:
     ~Agent() = default;

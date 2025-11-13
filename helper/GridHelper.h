@@ -19,36 +19,51 @@ public:
         std::unordered_set<Cell, Cell::Hash> occupiedCellsSet;
 
         for (const auto &polygon : polygons) {
-            if (polygon.getPoints().empty()) {
-                continue;
-            }
-
-            double minX = std::numeric_limits<double>::infinity();
-            double maxX = -std::numeric_limits<double>::infinity();
-            double minY = std::numeric_limits<double>::infinity();
-            double maxY = -std::numeric_limits<double>::infinity();
-
-            for (const auto &p : polygon.getPoints()) {
-                minX = std::min(minX, p.getX());
-                minY = std::min(minY, p.getY());
-                maxX = std::max(maxX, p.getX());
-                maxY = std::max(maxY, p.getY());
-            }
-
-            const double cellSize = grid.getCellSize();
-            const int iMin = static_cast<int>(std::floor(minX / cellSize));
-            const int iMax = static_cast<int>(std::floor(maxX / cellSize));
-            const int jMin = static_cast<int>(std::floor(minY / cellSize));
-            const int jMax = static_cast<int>(std::floor(maxY / cellSize));
-
-            for (int i = iMin; i <= iMax; i++) {
-                for (int j = jMin; j <= jMax; j++) {
-                    occupiedCellsSet.insert(Cell(i, j));
-                }
-            }
+            std::unordered_set<Cell, Cell::Hash> cells = getOccupiedCells(polygon, grid);
+            occupiedCellsSet.insert(cells.begin(), cells.end());
         }
 
         return {occupiedCellsSet.begin(), occupiedCellsSet.end()};
+    }
+
+    static std::unordered_set<Cell, Cell::Hash> getOccupiedCells(const Polygon &polygon, const UniformGrid &grid) {
+        std::unordered_set<Cell, Cell::Hash> occupiedCellsSet;
+
+        if (polygon.getPoints().empty()) {
+            return occupiedCellsSet;
+        }
+
+        double minX = std::numeric_limits<double>::infinity();
+        double maxX = -std::numeric_limits<double>::infinity();
+        double minY = std::numeric_limits<double>::infinity();
+        double maxY = -std::numeric_limits<double>::infinity();
+
+        for (const auto &p : polygon.getPoints()) {
+            minX = std::min(minX, p.getX());
+            minY = std::min(minY, p.getY());
+            maxX = std::max(maxX, p.getX());
+            maxY = std::max(maxY, p.getY());
+        }
+
+        const double cellSize = grid.getCellSize();
+        const int iMin = static_cast<int>(std::floor(minX / cellSize));
+        const int iMax = static_cast<int>(std::floor(maxX / cellSize));
+        const int jMin = static_cast<int>(std::floor(minY / cellSize));
+        const int jMax = static_cast<int>(std::floor(maxY / cellSize));
+
+        for (int i = iMin; i <= iMax; i++) {
+            for (int j = jMin; j <= jMax; j++) {
+                occupiedCellsSet.insert(Cell(i, j));
+            }
+        }
+
+        return occupiedCellsSet;
+    }
+
+    static Cell getCellPoint(const Point &point, const double cellSize) {
+        const int cellI = static_cast<int>(floor(point.getX() / cellSize));
+        const int cellJ = static_cast<int>(floor(point.getY() / cellSize));
+        return {cellI, cellJ};
     }
 };
 
