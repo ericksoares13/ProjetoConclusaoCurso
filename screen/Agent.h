@@ -24,8 +24,13 @@ private:
     long long currentId;
     long long endId;
 
-    std::vector<long long> pathStaticAgent;
-    int pathStaticAgentId;
+    std::vector<long long> pathAgent;
+    int pathAgentId;
+
+    double progressAlongEdge;
+    double currentSpeed;
+    long long nextNodeId;
+    bool isMoving;
 
     std::unordered_set<Cell, Cell::Hash> lastOccupiedCells;
     std::unordered_map<size_t, std::unordered_set<Cell, Cell::Hash>> polygonToCellsCache;

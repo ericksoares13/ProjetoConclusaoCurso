@@ -16,12 +16,21 @@ Agent::Agent(DynamicGraph& graph, const Type type, const Point &currentPosition,
     startId(startId),
     currentId(startId),
     endId(endId),
-    pathStaticAgentId(0),
-    pathStaticAgent(std::vector<long long>()) {
+    pathAgentId(0),
+    pathAgent(std::vector<long long>()),
+    progressAlongEdge(0.0),
+    currentSpeed(Polygon::acceleration),
+    nextNodeId(-1),
+    isMoving(false) {
     if (type == Static) {
-        this->pathStaticAgent = graph.findPathAStar(startId, endId);
+        this->pathAgent = graph.findPathAStar(startId, endId);
     } else {
-        this->pathStaticAgent = graph.findPathAStarConsideringPolygons(startId, endId);
+        this->pathAgent = graph.findPathAStarConsideringPolygons(startId, endId);
+    }
+
+    if (!this->pathAgent.empty()) {
+        this->nextNodeId = this->pathAgent[0];
+        this->isMoving = true;
     }
 }
 
@@ -117,60 +126,80 @@ bool Agent::isPointSafeCache(const Point& point, const DynamicGraph& graph) {
 }
 
 void Agent::move(DynamicGraph& graph) {
-    if (this->currentId == this->endId) return;
+    if (this->currentId == this->endId) {
+        this->isMoving = false;
+        return;
+    }
 
-    long long nextPointId = -1;
 
-    if (this->type == Dynamic) {
-        bool currentPathValid = !this->pathStaticAgent.empty();
+    if (!this->isMoving) {
+        if (this->type == Dynamic) {
+            bool currentPathValid = !this->pathAgent.empty();
 
-        if (currentPathValid) {
-            this->updateOccupiedCellsCache(graph);
+            if (currentPathValid) {
+                this->updateOccupiedCellsCache(graph);
 
-            for (int i = this->pathStaticAgentId; i < this->pathStaticAgent.size(); i++) {
-                nextPointId = this->pathStaticAgent[i];
-                const Cell pointCell = GridHelper::getCellPoint(graph.getIdToPoint().at(nextPointId), graph.getUniformGrid().getCellSize());
+                for (int i = this->pathAgentId; i < this->pathAgent.size(); i++) {
+                    const Cell pointCell = GridHelper::getCellPoint(graph.getIdToPoint().at(this->pathAgent[i]), graph.getUniformGrid().getCellSize());
 
-                if (this->hasLastIntersection && this->lastIntersectionCell == pointCell) {
-                    break;
+                    if (this->hasLastIntersection && this->lastIntersectionCell == pointCell) {
+                        break;
+                    }
+
+                    if (!isPointSafeCache(graph.getIdToPoint().at(this->pathAgent[i]), graph)) {
+                        currentPathValid = false;
+                        break;
+                    }
                 }
+            }
 
-                if (!isPointSafeCache(graph.getIdToPoint().at(nextPointId), graph)) {
-                    currentPathValid = false;
-                    nextPointId = -1;
-                    break;
-                }
+            if (!currentPathValid) {
+                this->pathAgent = graph.findPathAStarConsideringPolygons(this->currentId, this->endId);
+                this->pathAgentId = 0;
             }
         }
 
-        if (!currentPathValid) {
-            this->pathStaticAgent = graph.findPathAStarConsideringPolygons(this->currentId, this->endId);
-            this->pathStaticAgentId = 0;
-        }
-    }
+        if (!this->pathAgent.empty() && this->pathAgentId < this->pathAgent.size()) {
+            this->nextNodeId = this->pathAgent[this->pathAgentId];
+            const Point& currentPoint = graph.getIdToPoint().at(this->currentId);
+            const Point& nextPoint = graph.getIdToPoint().at(this->nextNodeId);
+            bool validPath = true;
 
-    if (!this->pathStaticAgent.empty()) {
-        nextPointId = this->pathStaticAgent[this->pathStaticAgentId];
-        const Point& currentPoint = graph.getIdToPoint().at(this->currentId);
-        const Point& nextPoint = graph.getIdToPoint().at(nextPointId);
-        bool validPath = true;
+            for (const Polygon& polygon : graph.getPolygons()) {
+                if (PointHelper::pointInConvexPolygon(polygon.getPoints(), currentPoint) ||
+                    PointHelper::pointInConvexPolygon(polygon.getPoints(), nextPoint)) {
+                    validPath = false;
+                    break;
+                }
+            }
 
-        for (const Polygon& polygon : graph.getPolygons()) {
-            if (PointHelper::pointInConvexPolygon(polygon.getPoints(), currentPoint) ||
-                PointHelper::pointInConvexPolygon(polygon.getPoints(), nextPoint)) {
-                nextPointId = -1;
-                validPath = false;
-                break;
+            if (validPath) {
+                this->isMoving = true;
+                this->progressAlongEdge = 0.0;
             }
         }
-
-        if (validPath) {
-            this->pathStaticAgentId++;
-        }
     }
 
-    if (nextPointId != -1) {
-        this->addPathMovent(nextPointId);
-        this->setCurrentId(graph, nextPointId);
+    if (this->isMoving) {
+        const Point& startPoint = graph.getIdToPoint().at(this->currentId);
+        const Point& endPoint = graph.getIdToPoint().at(this->nextNodeId);
+
+        const double edgeDistance = PointHelper::haversineDistance(startPoint, endPoint);
+        const double progressIncrement = this->currentSpeed / edgeDistance;
+        this->progressAlongEdge += progressIncrement;
+
+        const double newX = startPoint.getX() + (endPoint.getX() - startPoint.getX()) * this->progressAlongEdge;
+        const double newY = startPoint.getY() + (endPoint.getY() - startPoint.getY()) * this->progressAlongEdge;
+
+        this->currentPosition.setX(newX);
+        this->currentPosition.setY(newY);
+
+        if (this->progressAlongEdge >= 1.0) {
+            this->addPathMovent(this->nextNodeId);
+            this->setCurrentId(graph, this->nextNodeId);
+            this->pathAgentId++;
+            this->progressAlongEdge = 0.0;
+            this->isMoving = false;
+        }
     }
 }
