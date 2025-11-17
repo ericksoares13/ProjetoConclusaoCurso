@@ -33,7 +33,7 @@ private:
     bool isMoving;
 
     std::unordered_set<Cell, Cell::Hash> lastOccupiedCells;
-    std::unordered_map<size_t, std::unordered_set<Cell, Cell::Hash>> polygonToCellsCache;
+    std::unordered_map<int, std::unordered_set<Cell, Cell::Hash>> polygonToCellsCache;
 
     Cell lastIntersectionCell;
     bool hasLastIntersection;

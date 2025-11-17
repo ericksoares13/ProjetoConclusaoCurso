@@ -6,7 +6,6 @@
 #define PROJETOCONCLUSAOCURSO_POINT_HELPER_H
 #include <vector>
 
-#include "../geometry/Edge.h"
 #include "../geometry/Point.h"
 
 #define EPS 1e-9

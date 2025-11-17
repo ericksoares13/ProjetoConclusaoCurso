@@ -4,8 +4,10 @@
 
 #include "DynamicGraph.h"
 
+#include <iostream>
 #include <queue>
 #include <random>
+#include <omp.h>
 
 #include "../helper/PointHelper.h"
 
@@ -44,6 +46,7 @@ void DynamicGraph::updatePolygonsPosition() {
     static std::mt19937 gen(rd());
     std::uniform_real_distribution<> dist(-Polygon::maxMoveDistance, Polygon::maxMoveDistance);
 
+    #pragma omp parallel for
     for (auto &polygon : this->polygons) {
         bool validMove = false;
         int attempts = 0;
@@ -181,11 +184,14 @@ std::vector<long long> DynamicGraph::findPathAStarConsideringPolygons(const long
             const double weight = edge.getDist();
 
             bool edgeIntersectsPolygon = false;
+            #pragma omp parallel for
             for (const Polygon& polygon : this->polygons) {
-                if (PointHelper::pointInConvexPolygon(polygon.getPoints(), *edge.getU()) ||
-                    PointHelper::pointInConvexPolygon(polygon.getPoints(), *edge.getV())) {
-                    edgeIntersectsPolygon = true;
-                    break;
+                if (!edgeIntersectsPolygon) {
+                    if (PointHelper::pointInConvexPolygon(polygon.getPoints(), *edge.getU()) ||
+                        PointHelper::pointInConvexPolygon(polygon.getPoints(), *edge.getV())) {
+                        #pragma omp atomic write
+                        edgeIntersectsPolygon = true;
+                    }
                 }
             }
 

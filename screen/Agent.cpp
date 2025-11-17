@@ -83,23 +83,25 @@ void Agent::setCurrentId(const DynamicGraph& graph, long long id) {
 
 void Agent::updateOccupiedCellsCache(const DynamicGraph& graph) {
     bool changed = false;
-
     const auto& polygons = graph.getPolygons();
 
+    #pragma omp parallel for
     for (int i = 0; i < polygons.size(); i++) {
         const Polygon& poly = polygons[i];
         auto newCells = GridHelper::getOccupiedCells(poly, graph.getUniformGrid());
 
-        const auto it = this->polygonToCellsCache.find(i);
-        if (it == this->polygonToCellsCache.end() || it->second != newCells) {
-            this->polygonToCellsCache[i] = std::move(newCells);
-            changed = true;
+        #pragma omp critical(cache_access)
+        {
+            const auto it = this->polygonToCellsCache.find(i);
+            if (it == this->polygonToCellsCache.end() || it->second != newCells) {
+                this->polygonToCellsCache[i] = std::move(newCells);
+                changed = true;
+            }
         }
     }
 
     if (changed) {
         this->lastOccupiedCells.clear();
-
         for (const auto& [id, cells] : this->polygonToCellsCache) {
             this->lastOccupiedCells.insert(cells.begin(), cells.end());
         }
@@ -130,7 +132,6 @@ void Agent::move(DynamicGraph& graph) {
         this->isMoving = false;
         return;
     }
-
 
     if (!this->isMoving) {
         if (this->type == Dynamic) {
