@@ -32,7 +32,7 @@ Agent::Agent(DynamicGraph& graph, const Type type, const Point &currentPosition,
     pathAgentId(0),
     pathAgent(std::vector<long long>()),
     progressAlongEdge(0.0),
-    currentSpeed(Polygon::acceleration),
+    currentSpeed(100),
     nextNodeId(-1),
     isMoving(false) {
     if (type == Static) {
@@ -152,6 +152,8 @@ void Agent::move(DynamicGraph& graph) {
         return;
     }
 
+    this->moves++;
+
     if (!this->isMoving) {
         if (this->type == Dynamic) {
             bool currentPathValid = !this->pathAgent.empty();
@@ -205,8 +207,6 @@ void Agent::move(DynamicGraph& graph) {
     }
 
     if (this->isMoving) {
-        this->moves++;
-
         const Point& startPoint = graph.getIdToPoint().at(this->currentId);
         const Point& endPoint = graph.getIdToPoint().at(this->nextNodeId);
 

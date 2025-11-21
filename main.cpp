@@ -33,10 +33,9 @@ void initGraph(DynamicGraph &graph, std::ifstream &inputFile) {
     inputFile.close();
 }
 
-// TODO: melhorar dados armazenados
 void runTest(DynamicGraph &graph, std::ofstream &csvFile, const int numPolygons, const int runId) {
     graph.clearPolygons();
-    for(int i = 0; i<numPolygons; i++) {
+    for(int i = 0; i < numPolygons; i++) {
         graph.addPolygon(Polygon::generateHexInGrid(graph.getUniformGrid(), 0.005));
     }
 
@@ -76,16 +75,9 @@ void runTest(DynamicGraph &graph) {
     csvFile << "TicksStatic;DistStatic;AStarQntStatic;AStarMSStatic;";
     csvFile << "TicksDynamic;DistDynamic;AStarQntDynamic;AStarMSDynamic;Result\n";
 
-    // TESTE 1: Baixa Densidade (3 polígonos) - 50 rodadas
-    for(int i=0; i<50; i++) {
-        runTest(graph, csvFile, 3, i);
-        std::cout << "Rodando teste baixa densidade: " << i << '\n';
-    }
-
-    // TESTE 2: Alta Densidade (15 polígonos) - 50 rodadas
-    for(int i=0; i<50; i++) {
-        runTest(graph, csvFile, 15, i + 50);
-        std::cout << "Rodando teste alta densidade: " << i << '\n';
+    for(int i = 0; i < 500; i++) {
+        runTest(graph, csvFile, 5, i);
+        std::cout << "Rodando teste: " << i << '\n';
     }
 
     csvFile.close();

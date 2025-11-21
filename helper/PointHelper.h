@@ -43,7 +43,7 @@ public:
     }
 
     static double haversineDistance(const Point& p1, const Point& p2) {
-        constexpr double R = 6371.0;
+        constexpr double R = 6371000.0;
 
         const double lat1 = p1.getY() * M_PI / 180.0;
         const double lon1 = p1.getX() * M_PI / 180.0;
