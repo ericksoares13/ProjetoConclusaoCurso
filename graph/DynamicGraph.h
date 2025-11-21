@@ -57,6 +57,7 @@ public:
     void addPoint(long long id, double x, double y);
     void addEdge(long long idU, long long idV, double dist);
     void addPolygon(const Polygon &polygon);
+    void clearPolygons() { this->polygons.clear(); };
 
     void updatePolygonsPosition();
     std::vector<long long> findPathAStar(long long idU, long long idV);

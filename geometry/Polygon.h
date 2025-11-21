@@ -19,7 +19,7 @@ class Polygon {
 public:
     static constexpr double inertia = 0.8;
     static constexpr double acceleration = 0.5;
-    static constexpr double maxMoveDistance = 0.0009;
+    static constexpr double maxMoveDistance = 0.00009;
 
     Polygon();
     explicit Polygon(const std::vector<Point>& points);
