@@ -3,6 +3,7 @@
 //
 
 #include "Polygon.h"
+#include "../helper/PointHelper.h"
 
 #include <random>
 
@@ -70,4 +71,25 @@ Polygon Polygon::generateHexInGrid(const UniformGrid &grid, const double hexRadi
     }
 
     return hex;
+}
+
+bool Polygon::containsPoint(double x, double y) const {
+    if (this->points.empty()) return false;
+
+    return PointHelper::pointInConvexPolygon(this->points, {-1, x, y});
+}
+
+void Polygon::moveTo(const double newCenterX, const double newCenterY) {
+    if (this->points.empty()) return;
+
+    const double deltaX = newCenterX - this->center.getX();
+    const double deltaY = newCenterY - this->center.getY();
+
+    this->center.setX(newCenterX);
+    this->center.setY(newCenterY);
+
+    for (auto &point : this->points) {
+        point.setX(point.getX() + deltaX);
+        point.setY(point.getY() + deltaY);
+    }
 }

@@ -15,6 +15,8 @@ class Polygon {
     Point center;
     double velocityX = 0.0;
     double velocityY = 0.0;
+    bool isDraggable = false;
+    bool isBeingDragged = false;
 
 public:
     static constexpr double inertia = 0.8;
@@ -27,11 +29,17 @@ public:
     const std::vector<Point>& getPoints() const { return this->points; };
     double getVelocityX() const { return this->velocityX; };
     double getVelocityY() const { return this->velocityY; };
+    bool getDraggable() const { return this->isDraggable; }
+    bool getDragging() const { return this->isBeingDragged; }
 
     void setVelocityX(const double newVelocityX) { this->velocityX = newVelocityX; };
     void setVelocityY(const double newVelocityY) { this->velocityY = newVelocityY; };
+    void setDraggable(const bool draggable) { this->isDraggable = draggable; }
+    void setDragging(const bool dragging) { this->isBeingDragged = dragging; }
 
     bool updatePosition(double dx, double dy, const UniformGrid &grid);
+    bool containsPoint(double x, double y) const;
+    void moveTo(double newCenterX, double newCenterY);
 
     static Polygon generateHexInGrid(const UniformGrid &grid, double hexRadius);
 };

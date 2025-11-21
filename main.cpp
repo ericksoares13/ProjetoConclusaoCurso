@@ -100,7 +100,9 @@ void runTest(DynamicGraph &graph) {
 
 void displayGraph(DynamicGraph &graph) {
     for (int _ = 0; _ < 5; _++) {
-        graph.addPolygon(Polygon::generateHexInGrid(graph.getUniformGrid(), 0.005));
+        Polygon poly = Polygon::generateHexInGrid(graph.getUniformGrid(), 0.005);
+        poly.setDraggable(true);
+        graph.addPolygon(poly);
     }
 
     Screen screen;
@@ -112,7 +114,7 @@ void displayGraph(DynamicGraph &graph) {
         bool simulationRunning = true;
 
         while (screen.windowIsOpen() && simulationRunning) {
-            screen.processEvents();
+            screen.processEvents(graph);
             screen.update();
             graph.updatePolygonsPosition();
 
@@ -138,7 +140,7 @@ void displayGraph(DynamicGraph &graph) {
     }
 
     while (screen.windowIsOpen()) {
-        screen.processEvents();
+        screen.processEvents(graph);
         screen.update();
         screen.render(graph, {});
     }

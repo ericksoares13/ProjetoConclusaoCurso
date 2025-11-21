@@ -21,11 +21,21 @@ Screen::Screen() {
     this->backgroundTexture.clear(sf::Color::White);
 }
 
-sf::Vector2f Screen::latLonToScreen(const double lon, const double lat, const DynamicGraph &graph) const {
+sf::Vector2f Screen::latLonToScreen(const DynamicGraph &graph, const double lon, const double lat) const {
     const double x = (lon - graph.getMinLon()) / (graph.getMaxLon() - graph.getMinLon()) * this->windowWidth;
     const double y = (lat - graph.getMinLat()) / (graph.getMaxLat() - graph.getMinLat()) * this->windowHeight;
 
     return {static_cast<float>(x), static_cast<float>(this->windowHeight - y)};
+}
+
+sf::Vector2f Screen::screenToLatLon(const DynamicGraph &graph, const float screenX, const float screenY) const {
+    const float normalizedX = screenX / static_cast<float>(this->windowWidth);
+    const float normalizedY = 1.0f - (screenY / static_cast<float>(this->windowHeight));
+
+    const double lon = graph.getMinLon() + normalizedX * (graph.getMaxLon() - graph.getMinLon());
+    const double lat = graph.getMinLat() + normalizedY * (graph.getMaxLat() - graph.getMinLat());
+
+    return {static_cast<float>(lon), static_cast<float>(lat)};
 }
 
 void Screen::drawBackgroundGrid(const DynamicGraph &graph) {
@@ -46,8 +56,8 @@ void Screen::drawBackgroundGrid(const DynamicGraph &graph) {
             if (lon1 > graph.getMaxLon()) lon1 = graph.getMaxLon();
             if (lat1 > graph.getMaxLat()) lat1 = graph.getMaxLat();
 
-            sf::Vector2f topLeft = latLonToScreen(lon0, lat1, graph);
-            const sf::Vector2f bottomRight = latLonToScreen(lon1, lat0, graph);
+            sf::Vector2f topLeft = latLonToScreen(graph, lon0, lat1);
+            const sf::Vector2f bottomRight = latLonToScreen(graph, lon1, lat0);
 
             sf::RectangleShape cellShape(sf::Vector2f(bottomRight.x - topLeft.x, bottomRight.y - topLeft.y));
             cellShape.setPosition(topLeft);
@@ -69,8 +79,8 @@ void Screen::drawBackgroundEdges(const DynamicGraph &graph) {
     for (auto &[id, edges]: graph.getAdj()){
         for (const auto &edge : edges) {
             const sf::Vertex line[] = {
-                sf::Vertex(latLonToScreen(edge.getU()->getX(), edge.getU()->getY(), graph), sf::Color::Black),
-                sf::Vertex(latLonToScreen(edge.getV()->getX(), edge.getV()->getY(), graph), sf::Color::Black)
+                sf::Vertex(latLonToScreen(graph, edge.getU()->getX(), edge.getU()->getY()), sf::Color::Black),
+                sf::Vertex(latLonToScreen(graph, edge.getV()->getX(), edge.getV()->getY()), sf::Color::Black)
             };
             this->backgroundTexture.draw(line, 2, sf::Lines);
         }
@@ -95,8 +105,8 @@ void Screen::drawEdges(const DynamicGraph &graph) {
                     if (PointHelper::pointInConvexPolygon(polygon.getPoints(), *edge->getU()) ||
                         PointHelper::pointInConvexPolygon(polygon.getPoints(), *edge->getV())) {
                         const sf::Vertex line[] = {
-                            sf::Vertex(latLonToScreen(edge->getU()->getX(), edge->getU()->getY(), graph), sf::Color::Red),
-                            sf::Vertex(latLonToScreen(edge->getV()->getX(), edge->getV()->getY(), graph), sf::Color::Red)
+                            sf::Vertex(latLonToScreen(graph, edge->getU()->getX(), edge->getU()->getY()), sf::Color::Red),
+                            sf::Vertex(latLonToScreen(graph, edge->getV()->getX(), edge->getV()->getY()), sf::Color::Red)
                         };
                         this->window.draw(line, 2, sf::Lines);
                     }
@@ -114,11 +124,16 @@ void Screen::drawPolygons(const DynamicGraph &graph) {
         shape.setPointCount(n);
 
         for (size_t i = 0; i < n; i++) {
-            sf::Vector2f pos = latLonToScreen(poly.getPoints()[i].getX(), poly.getPoints()[i].getY(), graph);
+            sf::Vector2f pos = latLonToScreen(graph, poly.getPoints()[i].getX(), poly.getPoints()[i].getY());
             shape.setPoint(i, pos);
         }
 
-        shape.setFillColor(sf::Color::Transparent);
+        if (poly.getDragging()) {
+            shape.setFillColor(sf::Color(255, 0, 0, 100));
+        } else {
+            shape.setFillColor(sf::Color::Transparent);
+        }
+
         shape.setOutlineColor(sf::Color::Green);
         shape.setOutlineThickness(2.0f);
 
@@ -140,8 +155,8 @@ void Screen::drawAgents(const DynamicGraph& graph, const std::vector<Agent*>& ag
             const Point* p2 = &graph.getIdToPoint().at(id2);
 
             sf::RectangleShape pathSegment;
-            sf::Vector2f start = latLonToScreen(p1->getX(), p1->getY(), graph);
-            sf::Vector2f end = latLonToScreen(p2->getX(), p2->getY(), graph);
+            sf::Vector2f start = latLonToScreen(graph, p1->getX(), p1->getY());
+            sf::Vector2f end = latLonToScreen(graph, p2->getX(), p2->getY());
 
             sf::Vector2f direction = end - start;
             float length = std::sqrt(direction.x * direction.x + direction.y * direction.y);
@@ -149,7 +164,7 @@ void Screen::drawAgents(const DynamicGraph& graph, const std::vector<Agent*>& ag
 
             pathSegment.setSize(sf::Vector2f(length, 3.0f));
             pathSegment.setPosition(start);
-            pathSegment.setRotation(std::atan2(direction.y, direction.x) * 180 / M_PI);
+            pathSegment.setRotation(static_cast<float>(std::atan2(direction.y, direction.x) * 180 / M_PI));
             pathSegment.setFillColor(pathColor);
 
             this->window.draw(pathSegment);
@@ -158,7 +173,7 @@ void Screen::drawAgents(const DynamicGraph& graph, const std::vector<Agent*>& ag
 
     for (auto &agent : agents) {
         sf::CircleShape agentShape(6.0f);
-        sf::Vector2f screenPos = latLonToScreen(agent->getCurrentPosition().getX(), agent->getCurrentPosition().getY(), graph);
+        sf::Vector2f screenPos = latLonToScreen(graph, agent->getCurrentPosition().getX(), agent->getCurrentPosition().getY());
         agentShape.setPosition(screenPos.x - 6, screenPos.y - 6);
 
         sf::Color agentColor = agent->getType() == Agent::Dynamic ? sf::Color::Red : sf::Color::Cyan;
@@ -177,7 +192,7 @@ void Screen::drawAgents(const DynamicGraph& graph, const std::vector<Agent*>& ag
     }
 
     const Point& dest = graph.getIdToPoint().at(destId);
-    const sf::Vector2f screenPos = latLonToScreen(dest.getX(), dest.getY(), graph);
+    const sf::Vector2f screenPos = latLonToScreen(graph, dest.getX(), dest.getY());
 
     sf::CircleShape destShape(8.0f);
     destShape.setPosition(screenPos.x - 8, screenPos.y - 8);
@@ -188,11 +203,51 @@ void Screen::drawAgents(const DynamicGraph& graph, const std::vector<Agent*>& ag
     this->window.draw(destShape);
 }
 
+Polygon* getPolygonAtPosition(const DynamicGraph &graph, const float worldX, const float worldY) {
+    for (auto& polygons = const_cast<std::vector<Polygon>&>(graph.getPolygons()); auto& poly : polygons) {
+        if (poly.getDraggable() && poly.containsPoint(worldX, worldY)) {
+            return &poly;
+        }
+    }
+
+    return nullptr;
+}
+
+void Screen::handleMouseDrag(const DynamicGraph &graph, const sf::Event& event) {
+    const sf::Vector2i mousePixelPos = sf::Mouse::getPosition(this->window);
+    const sf::Vector2f mouseWorldPos = this->window.mapPixelToCoords(mousePixelPos, this->view);
+
+    const sf::Vector2f mouseLatLon = screenToLatLon(graph, mouseWorldPos.x, mouseWorldPos.y);
+
+    if (event.type == sf::Event::MouseButtonPressed) {
+        if (event.mouseButton.button == sf::Mouse::Left) {
+            this->draggedPolygon = getPolygonAtPosition(graph, mouseLatLon.x, mouseLatLon.y);
+            if (this->draggedPolygon) {
+                this->draggedPolygon->setDragging(true);
+                this->lastMousePos = mouseLatLon;
+            }
+        }
+    }
+    else if (event.type == sf::Event::MouseButtonReleased) {
+        if (event.mouseButton.button == sf::Mouse::Left && this->draggedPolygon) {
+            this->draggedPolygon->setDragging(false);
+            this->draggedPolygon = nullptr;
+        }
+    }
+    else if (event.type == sf::Event::MouseMoved) {
+        if (this->draggedPolygon && this->draggedPolygon->getDragging()) {
+            const sf::Vector2f currentMousePos = mouseLatLon;
+            this->draggedPolygon->moveTo(currentMousePos.x, currentMousePos.y);
+            this->lastMousePos = currentMousePos;
+        }
+    }
+}
+
 bool Screen::windowIsOpen() const {
     return this->window.isOpen();
 }
 
-void Screen::processEvents() {
+void Screen::processEvents(const DynamicGraph &graph) {
     sf::Event event{};
 
     while (this->window.pollEvent(event)) {
@@ -207,6 +262,8 @@ void Screen::processEvents() {
 
             this->window.setView(this->view);
         }
+
+        this->handleMouseDrag(graph, event);
     }
 }
 

@@ -4,7 +4,6 @@
 
 #ifndef PROJETOCONCLUSAOCURSO_AGENT_H
 #define PROJETOCONCLUSAOCURSO_AGENT_H
-#include <boost/functional/hash.hpp>
 #include <unordered_set>
 #include <utility>
 #include <vector>

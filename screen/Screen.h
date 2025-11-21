@@ -22,19 +22,26 @@ class Screen {
     sf::Sprite background;
     sf::View view;
 
-    sf::Vector2f latLonToScreen(double lon, double lat, const DynamicGraph &graph) const;
+    Polygon* draggedPolygon = nullptr;
+    sf::Vector2f lastMousePos;
+
+    sf::Vector2f latLonToScreen(const DynamicGraph &graph, double lon, double lat) const;
+    sf::Vector2f screenToLatLon(const DynamicGraph &graph, float screenX, float screenY) const;
+
     void drawBackgroundGrid(const DynamicGraph &graph);
     void drawBackgroundEdges(const DynamicGraph &graph);
     void drawEdges(const DynamicGraph &graph);
     void drawPolygons(const DynamicGraph &graph);
     void drawAgents(const DynamicGraph& graph, const std::vector<Agent*>& agents);
 
+    void handleMouseDrag(const DynamicGraph &graph, const sf::Event& event);
+
 public:
     Screen();
 
     void drawBackground(const DynamicGraph &graph);
     bool windowIsOpen() const;
-    void processEvents();
+    void processEvents(const DynamicGraph &graph);
     void update();
     void render(const DynamicGraph &graph, const std::vector<Agent*>& agents);
 };
