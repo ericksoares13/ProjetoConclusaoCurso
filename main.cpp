@@ -33,10 +33,10 @@ void initGraph(DynamicGraph &graph, std::ifstream &inputFile) {
     inputFile.close();
 }
 
-void runTest(DynamicGraph &graph, std::ofstream &csvFile, const int numPolygons, const int runId) {
+void runTest(DynamicGraph &graph, std::ofstream &csvFile, const int numPolygons, const double polygonRadius) {
     graph.clearPolygons();
     for(int i = 0; i < numPolygons; i++) {
-        graph.addPolygon(Polygon::generateHexInGrid(graph.getUniformGrid(), 0.005));
+        graph.addPolygon(Polygon::generateHexInGrid(graph.getUniformGrid(), polygonRadius));
     }
 
     const auto agents = Agent::initAgents(graph);
@@ -58,8 +58,7 @@ void runTest(DynamicGraph &graph, std::ofstream &csvFile, const int numPolygons,
         if (dynamicArrived && staticArrived) running = false;
     }
 
-    csvFile << runId << ';' << numPolygons << ';'
-            << staticAgent->moves << ';' << staticAgent->dist << ';'
+    csvFile << staticAgent->moves << ';' << staticAgent->dist << ';'
             << staticAgent->aStarQnt << ';' << staticAgent->aStarMS << ';'
             << dynamicAgent->moves << ';' << dynamicAgent->dist << ';'
             << dynamicAgent->aStarQnt << ';' << dynamicAgent->aStarMS << ';'
@@ -69,23 +68,22 @@ void runTest(DynamicGraph &graph, std::ofstream &csvFile, const int numPolygons,
     delete staticAgent;
 }
 
-void runTest(DynamicGraph &graph) {
-    std::ofstream csvFile("resultados_tcc.csv");
-    csvFile << "RunID;NumPoligonos;";
+void runTest(DynamicGraph &graph, const int numPolygons, const double polygonRadius) {
+    std::ofstream csvFile("resultados_" + std::to_string(numPolygons) + "poligonos_raio" + std::to_string(polygonRadius) + "_tcc.csv");
     csvFile << "TicksStatic;DistStatic;AStarQntStatic;AStarMSStatic;";
     csvFile << "TicksDynamic;DistDynamic;AStarQntDynamic;AStarMSDynamic;Result\n";
 
     for(int i = 0; i < 500; i++) {
-        runTest(graph, csvFile, 5, i);
+        runTest(graph, csvFile, numPolygons, polygonRadius);
         std::cout << "Rodando teste: " << i << '\n';
     }
 
     csvFile.close();
 }
 
-void displayGraph(DynamicGraph &graph) {
-    for (int _ = 0; _ < 5; _++) {
-        Polygon poly = Polygon::generateHexInGrid(graph.getUniformGrid(), 0.005);
+void displayGraph(DynamicGraph &graph, const int numPolygons, const double polygonRadius) {
+    for (int i = 0; i < numPolygons; i++) {
+        Polygon poly = Polygon::generateHexInGrid(graph.getUniformGrid(), polygonRadius);
         poly.setDraggable(true);
         graph.addPolygon(poly);
     }
@@ -132,13 +130,15 @@ void displayGraph(DynamicGraph &graph) {
 }
 
 int main(int argc, char* argv[]) {
-    if (argc < 3) {
-        std::cerr << "Uso: ./ProjetoConclusaoCurso <arquivo-input> <test|exhibition>\n";
+    if (argc < 5) {
+        std::cerr << "Uso: ./ProjetoConclusaoCurso <arquivo> <test|exhibition> <numPolygons> <radius>\n";
         return 1;
     }
 
     std::string filename = argv[1];
     std::string mode = argv[2];
+    int numPolygons = std::stoi(argv[3]);
+    double polygonRadius = std::stod(argv[4]);
 
     std::ifstream inputFile(filename);
     if (!inputFile.is_open()) {
@@ -150,9 +150,9 @@ int main(int argc, char* argv[]) {
     initGraph(graph, inputFile);
 
     if (mode == "test") {
-        runTest(graph);
+        runTest(graph, numPolygons, polygonRadius);
     } else if (mode == "exhibition") {
-        displayGraph(graph);
+        displayGraph(graph, numPolygons, polygonRadius);
     } else {
         std::cerr << "Modo inválido! Use 'test' ou 'exhibition'.\n";
         return 1;
