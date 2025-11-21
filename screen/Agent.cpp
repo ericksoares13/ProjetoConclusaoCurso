@@ -3,11 +3,24 @@
 //
 
 #include "Agent.h"
+
+#include <chrono>
+
 #include "../helper/GridHelper.h"
 #include "../helper/PointHelper.h"
 
 #include <random>
 
+
+template<typename F>
+auto measureTimeMs(F func, long long& elapsedMs) {
+    const auto start = std::chrono::high_resolution_clock::now();
+    auto result = func();
+    const auto end = std::chrono::high_resolution_clock::now();
+
+    elapsedMs += std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+    return result;
+}
 
 Agent::Agent(DynamicGraph& graph, const Type type, const Point &currentPosition, const long long startId, const long long endId) :
     type(type),
@@ -23,9 +36,15 @@ Agent::Agent(DynamicGraph& graph, const Type type, const Point &currentPosition,
     nextNodeId(-1),
     isMoving(false) {
     if (type == Static) {
-        this->pathAgent = graph.findPathAStar(startId, endId);
+        this->pathAgent = measureTimeMs(
+            [&]() { return graph.findPathAStar(startId, endId); },
+            this->aStarMS
+        );
     } else {
-        this->pathAgent = graph.findPathAStarConsideringPolygons(startId, endId);
+        this->pathAgent = measureTimeMs(
+            [&]() { return graph.findPathAStarConsideringPolygons(startId, endId); },
+            this->aStarMS
+        );
     }
 
     if (!this->pathAgent.empty()) {
@@ -155,7 +174,11 @@ void Agent::move(DynamicGraph& graph) {
             }
 
             if (!currentPathValid) {
-                this->pathAgent = graph.findPathAStarConsideringPolygons(this->currentId, this->endId);
+                this->aStarQnt++;
+                this->pathAgent = measureTimeMs(
+                    [&]() { return graph.findPathAStarConsideringPolygons(this->currentId, this->endId); },
+                    this->aStarMS
+                );
                 this->pathAgentId = 0;
             }
         }
@@ -182,6 +205,8 @@ void Agent::move(DynamicGraph& graph) {
     }
 
     if (this->isMoving) {
+        this->moves++;
+
         const Point& startPoint = graph.getIdToPoint().at(this->currentId);
         const Point& endPoint = graph.getIdToPoint().at(this->nextNodeId);
 
@@ -201,6 +226,7 @@ void Agent::move(DynamicGraph& graph) {
             this->pathAgentId++;
             this->progressAlongEdge = 0.0;
             this->isMoving = false;
+            this->dist += edgeDistance;
         }
     }
 }

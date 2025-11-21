@@ -48,6 +48,11 @@ private:
 public:
     ~Agent() = default;
 
+    int moves = 0;
+    double dist = 0;
+    int aStarQnt = 1;
+    long long aStarMS = 0;
+
     static std::vector<Agent*> initAgents(DynamicGraph& graph);
     void addPathMovent(long long id);
     void setCurrentId(const DynamicGraph& graph, long long id);

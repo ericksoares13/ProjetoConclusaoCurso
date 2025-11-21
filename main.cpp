@@ -44,36 +44,27 @@ void runTest(DynamicGraph &graph, std::ofstream &csvFile, const int numPolygons,
     const Agent* dynamicAgent = agents.at(0);
     const Agent* staticAgent = agents.at(1);
 
-    int ticks = 0;
     bool running = true;
-    int collisionsStatic = 0;
-    int collisionsDynamic = 0;
 
     while (running) {
         graph.updatePolygonsPosition();
 
         for (auto &agent : agents) {
             agent->move(graph);
-
-            // Verifica colisão para métricas
-            // (Você precisará expor uma função para checar se o ponto atual está num polígono)
-            // Exemplo hipotético:
-            // if (graph.checkCollision(agent->getCurrentPosition())) {
-            //     if (agent->getType() == Agent::Static) collisionsStatic++;
-            //     else collisionsDynamic++;
-            // }
         }
 
-        bool dynamicArrived = (dynamicAgent->getCurrentId() == dynamicAgent->getEndId());
-        bool staticArrived = (staticAgent->getCurrentId() == staticAgent->getEndId());
+        const bool dynamicArrived = (dynamicAgent->getCurrentId() == dynamicAgent->getEndId());
+        const bool staticArrived = (staticAgent->getCurrentId() == staticAgent->getEndId());
 
         if (dynamicArrived && staticArrived) running = false;
-        ticks++;
     }
 
-    csvFile << runId << "," << numPolygons << "," << ticks << ","
-            << staticAgent->getPath().size() << "," << dynamicAgent->getPath().size() << ","
-            << collisionsStatic << "," << collisionsDynamic << "\n";
+    csvFile << runId << ';' << numPolygons << ';'
+            << staticAgent->moves << ';' << staticAgent->dist << ';'
+            << staticAgent->aStarQnt << ';' << staticAgent->aStarMS << ';'
+            << dynamicAgent->moves << ';' << dynamicAgent->dist << ';'
+            << dynamicAgent->aStarQnt << ';' << dynamicAgent->aStarMS << ';'
+            << (dynamicAgent->moves == staticAgent->moves ? '0' : dynamicAgent->moves < staticAgent->moves ? '1' : '2') << '\n';
 
     delete dynamicAgent;
     delete staticAgent;
@@ -81,18 +72,20 @@ void runTest(DynamicGraph &graph, std::ofstream &csvFile, const int numPolygons,
 
 void runTest(DynamicGraph &graph) {
     std::ofstream csvFile("resultados_tcc.csv");
-    csvFile << "RunID,NumPoligonos,Ticks,DistStatic,DistDynamic,ColisoesStatic,ColisoesDynamic\n";
+    csvFile << "RunID;NumPoligonos;";
+    csvFile << "TicksStatic;DistStatic;AStarQntStatic;AStarMSStatic;";
+    csvFile << "TicksDynamic;DistDynamic;AStarQntDynamic;AStarMSDynamic;Result\n";
 
     // TESTE 1: Baixa Densidade (3 polígonos) - 50 rodadas
     for(int i=0; i<50; i++) {
         runTest(graph, csvFile, 3, i);
-        std::cout << "Rodando teste baixa densidade: " << i << "\n";
+        std::cout << "Rodando teste baixa densidade: " << i << '\n';
     }
 
     // TESTE 2: Alta Densidade (15 polígonos) - 50 rodadas
     for(int i=0; i<50; i++) {
         runTest(graph, csvFile, 15, i + 50);
-        std::cout << "Rodando teste alta densidade: " << i << "\n";
+        std::cout << "Rodando teste alta densidade: " << i << '\n';
     }
 
     csvFile.close();
@@ -157,7 +150,7 @@ int main(int argc, char* argv[]) {
 
     std::ifstream inputFile(filename);
     if (!inputFile.is_open()) {
-        std::cerr << "Erro ao abrir o arquivo " + filename + "\n";
+        std::cerr << "Erro ao abrir o arquivo " + filename + '\n';
         return 1;
     }
 
