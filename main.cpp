@@ -70,8 +70,8 @@ void runTest(DynamicGraph &graph, std::ofstream &csvFile, const int numPolygons,
 
 void runTest(DynamicGraph &graph, const int numPolygons, const double polygonRadius) {
     std::ofstream csvFile("resultados_" + std::to_string(numPolygons) + "poligonos_raio" + std::to_string(polygonRadius) + "_tcc.csv");
-    csvFile << "TicksStatic;DistStatic;AStarQntStatic;AStarMSStatic;";
-    csvFile << "TicksDynamic;DistDynamic;AStarQntDynamic;AStarMSDynamic;Result\n";
+    csvFile << "TicksStatic;DistStatic;AStarQntStatic;ProcessTimeMSStatic;";
+    csvFile << "TicksDynamic;DistDynamic;AStarQntDynamic;ProcessTimeMSDynamic;Result\n";
 
     for(int i = 0; i < 500; i++) {
         runTest(graph, csvFile, numPolygons, polygonRadius);

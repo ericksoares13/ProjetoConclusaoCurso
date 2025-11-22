@@ -51,7 +51,7 @@ public:
     int moves = 0;
     double dist = 0;
     int aStarQnt = 1;
-    long long aStarMS = 0;
+    long long processTimeMS = 0;
 
     static std::vector<Agent*> initAgents(DynamicGraph& graph);
     void addPathMovent(long long id);

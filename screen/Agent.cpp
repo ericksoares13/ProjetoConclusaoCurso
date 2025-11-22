@@ -36,7 +36,7 @@ Agent::Agent(DynamicGraph& graph, const Type type, const Point &currentPosition,
 
     // End time
     const auto end = std::chrono::high_resolution_clock::now();
-    this->aStarMS += std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+    this->processTimeMS += std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 
     if (!this->pathAgent.empty()) {
         this->nextNodeId = this->pathAgent[0];
@@ -222,5 +222,5 @@ void Agent::move(DynamicGraph& graph) {
 
     // End time
     const auto end = std::chrono::high_resolution_clock::now();
-    this->aStarMS += std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+    this->processTimeMS += std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 }
