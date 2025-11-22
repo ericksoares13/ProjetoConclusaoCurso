@@ -12,16 +12,6 @@
 #include <random>
 
 
-template<typename F>
-auto measureTimeMs(F func, long long& elapsedMs) {
-    const auto start = std::chrono::high_resolution_clock::now();
-    auto result = func();
-    const auto end = std::chrono::high_resolution_clock::now();
-
-    elapsedMs += std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-    return result;
-}
-
 Agent::Agent(DynamicGraph& graph, const Type type, const Point &currentPosition, const long long startId, const long long endId) :
     type(type),
     currentPosition(currentPosition),
@@ -35,17 +25,18 @@ Agent::Agent(DynamicGraph& graph, const Type type, const Point &currentPosition,
     currentSpeed(100),
     nextNodeId(-1),
     isMoving(false) {
+    // Start time
+    const auto start = std::chrono::high_resolution_clock::now();
+
     if (type == Static) {
-        this->pathAgent = measureTimeMs(
-            [&]() { return graph.findPathAStar(startId, endId); },
-            this->aStarMS
-        );
+        this->pathAgent = graph.findPathAStar(startId, endId);
     } else {
-        this->pathAgent = measureTimeMs(
-            [&]() { return graph.findPathAStarConsideringPolygons(startId, endId); },
-            this->aStarMS
-        );
+        this->pathAgent = graph.findPathAStarConsideringPolygons(startId, endId);
     }
+
+    // End time
+    const auto end = std::chrono::high_resolution_clock::now();
+    this->aStarMS += std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 
     if (!this->pathAgent.empty()) {
         this->nextNodeId = this->pathAgent[0];
@@ -152,6 +143,8 @@ void Agent::move(DynamicGraph& graph) {
         return;
     }
 
+    // Start time
+    const auto start = std::chrono::high_resolution_clock::now();
     this->moves++;
 
     if (!this->isMoving) {
@@ -177,10 +170,7 @@ void Agent::move(DynamicGraph& graph) {
 
             if (!currentPathValid) {
                 this->aStarQnt++;
-                this->pathAgent = measureTimeMs(
-                    [&]() { return graph.findPathAStarConsideringPolygons(this->currentId, this->endId); },
-                    this->aStarMS
-                );
+                this->pathAgent = graph.findPathAStarConsideringPolygons(this->currentId, this->endId);
                 this->pathAgentId = 0;
             }
         }
@@ -229,4 +219,8 @@ void Agent::move(DynamicGraph& graph) {
             this->dist += edgeDistance;
         }
     }
+
+    // End time
+    const auto end = std::chrono::high_resolution_clock::now();
+    this->aStarMS += std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 }
