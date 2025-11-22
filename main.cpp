@@ -59,9 +59,9 @@ void runTest(DynamicGraph &graph, std::ofstream &csvFile, const int numPolygons,
     }
 
     csvFile << staticAgent->moves << ';' << staticAgent->dist << ';'
-            << staticAgent->aStarQnt << ';' << staticAgent->aStarMS << ';'
+            << staticAgent->aStarQnt << ';' << staticAgent->processTimeMS << ';'
             << dynamicAgent->moves << ';' << dynamicAgent->dist << ';'
-            << dynamicAgent->aStarQnt << ';' << dynamicAgent->aStarMS << ';'
+            << dynamicAgent->aStarQnt << ';' << dynamicAgent->processTimeMS << ';'
             << (dynamicAgent->moves == staticAgent->moves ? '0' : dynamicAgent->moves < staticAgent->moves ? '1' : '2') << '\n';
 
     delete dynamicAgent;
