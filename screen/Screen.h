@@ -14,9 +14,11 @@
 
 
 class Screen {
+    // Tamanho da tela
     const int windowWidth = 900;
     const int windowHeight = 900;
 
+    // Textura de fundo (grade uniforme e arestas) que é sempre a mesma
     sf::RenderTexture backgroundTexture;
     sf::RenderWindow window;
     sf::Sprite background;

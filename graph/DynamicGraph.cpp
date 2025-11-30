@@ -20,6 +20,7 @@ DynamicGraph::DynamicGraph()
       maxLat(-std::numeric_limits<double>::infinity()) {}
 
 void DynamicGraph::addPoint(const long long id, const double x, const double y) {
+    // Adiciona o ponto corrigindo os limites geográficos do mapa
     this->idToPoint[id] = Point(id, x, y);
     this->adj[id] = {};
 
@@ -30,6 +31,7 @@ void DynamicGraph::addPoint(const long long id, const double x, const double y) 
 }
 
 void DynamicGraph::addEdge(const long long idU, const long long idV, const double dist) {
+    // Adiciona a aresta na lista de adjacência e na grade uniforme
     Point *pointU = &idToPoint[idU];
     Point *pointV = &idToPoint[idV];
 
@@ -38,6 +40,7 @@ void DynamicGraph::addEdge(const long long idU, const long long idV, const doubl
 }
 
 void DynamicGraph::addPolygon(const Polygon &polygon) {
+    // Adiciona o polígono
     this->polygons.push_back(polygon);
 }
 
@@ -51,6 +54,8 @@ void DynamicGraph::updatePolygonsPosition() {
         bool validMove = false;
         int attempts = 0;
 
+        // Enquanto não for um movimento válido (célula que possui arestas), tenta movimentar o polígono novamente
+        // Até atingir um limite máximo de 10 tentativas
         while (!validMove && attempts < 10) {
             const double ax = dist(gen) * Polygon::acceleration;
             const double ay = dist(gen) * Polygon::acceleration;
@@ -71,6 +76,7 @@ void DynamicGraph::updatePolygonsPosition() {
 }
 
 std::vector<long long> DynamicGraph::findPathAStar(const long long idU, const long long idV) {
+    // A* que retorna o caminho encontrado
     std::vector<long long> path;
 
     if (!this->idToPoint.contains(idU) || !this->idToPoint.contains(idV)) {
@@ -106,15 +112,18 @@ std::vector<long long> DynamicGraph::findPathAStar(const long long idU, const lo
             continue;
         }
 
+        // Para cada arestas do vértice atual
         for (const Edge& edge : this->adj[u]) {
             const long long v = edge.getV()->getId();
             const double weight = edge.getDist();
             const double newGCost = gCosts[u] + weight;
 
+            // Se encontrou um custo melhor, adiciona na fila
             if (newGCost < gCosts[v]) {
                 gCosts[v] = newGCost;
                 previous[v] = u;
 
+                // Utiliza a heurística de haversine para h(n)
                 const double hCost = PointHelper::haversineDistance(this->idToPoint.at(v), target);
                 const double fCost = newGCost + hCost;
 
@@ -123,21 +132,25 @@ std::vector<long long> DynamicGraph::findPathAStar(const long long idU, const lo
         }
     }
 
+    // Se não chegou ao destino retorna um caminho vazio
     if (!previous.contains(idV) || previous.at(idV) == -1) {
         return path;
     }
 
+    // Caso contrário reconstroi o caminho a partir do vetor de previous
     long long current = idV;
     while (current != idU && previous.at(current) != -1) {
         path.push_back(current);
         current = previous.at(current);
     }
 
+    // Inverte o caminho e retorna ele
     std::reverse(path.begin(), path.end());
     return path;
 }
 
 std::vector<long long> DynamicGraph::findPathAStarConsideringPolygons(const long long idU, const long long idV) {
+    // Similar ao anterior porem considerando os polígonos
     std::vector<long long> path;
 
     if (!this->idToPoint.contains(idU) || !this->idToPoint.contains(idV)) {
@@ -146,6 +159,7 @@ std::vector<long long> DynamicGraph::findPathAStarConsideringPolygons(const long
 
     const Point& target = this->idToPoint.at(idV);
 
+    // Se o destino está obstruído, retorna sem considerar os polígonos
     for (const Polygon& polygon : this->polygons) {
         if (PointHelper::pointInConvexPolygon(polygon.getPoints(), target)) {
             return findPathAStar(idU, idV);
@@ -183,6 +197,7 @@ std::vector<long long> DynamicGraph::findPathAStarConsideringPolygons(const long
             const long long v = edge.getV()->getId();
             const double weight = edge.getDist();
 
+            // Se a aresta intersecta algum polígono
             bool edgeIntersectsPolygon = false;
             #pragma omp parallel for
             for (const Polygon& polygon : this->polygons) {
@@ -195,6 +210,7 @@ std::vector<long long> DynamicGraph::findPathAStarConsideringPolygons(const long
                 }
             }
 
+            // Essa aresta não pode ser utilizada
             if (edgeIntersectsPolygon) {
                 continue;
             }

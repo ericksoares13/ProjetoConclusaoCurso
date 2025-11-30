@@ -17,11 +17,11 @@
 class Polygon;
 
 class DynamicGraph {
-    std::unordered_map<long long, Point> idToPoint;
-    std::unordered_map<long long, std::list<Edge>> adj;
-    std::vector<Polygon> polygons;
-    UniformGrid uniformGrid;
-    double cellSize;
+    std::unordered_map<long long, Point> idToPoint;     // Mapeia os ids do OpenStreetMap para os pontos criados
+    std::unordered_map<long long, std::list<Edge>> adj; // Lista de adjacência
+    std::vector<Polygon> polygons;                      // Polígonos que modelam os congestionamentos
+    UniformGrid uniformGrid;                            // Grade uniforme
+    double cellSize;                                    // Tamanho da célula
 
     double minLon;
     double maxLon;

@@ -12,16 +12,19 @@ Polygon::Polygon() = default;
 Polygon::Polygon(const std::vector<Point> &points) : points(points) {}
 
 bool Polygon::updatePosition(const double dx, const double dy, const UniformGrid &grid) {
+    // Movimenta de acordo com o vetor de velocidade
     const double newCenterX = this->center.getX() + dx;
     const double newCenterY = this->center.getY() + dy;
 
     const int cellI = static_cast<int>(floor(newCenterX / grid.getCellSize()));
     const int cellJ = static_cast<int>(floor(newCenterY / grid.getCellSize()));
 
+    // Se for uma célula inválida (não possui arestas) o movimento não é executado
     if (const Cell newCell(cellI, cellJ); !grid.getGrid().contains(newCell)) {
         return false;
     }
 
+    // Se for válida atualiza a posição do centro e dos pontos
     this->center.setX(newCenterX);
     this->center.setY(newCenterY);
 
@@ -37,6 +40,7 @@ Polygon Polygon::generateHexInGrid(const UniformGrid &grid, const double hexRadi
     std::random_device rd;
     std::mt19937 gen(rd());
 
+    // Procura as células não vazias
     std::vector<Cell> nonEmptyCells;
     for (auto &[cell, edges] : grid.getGrid()) {
         if (!edges.empty()) {
@@ -48,6 +52,7 @@ Polygon Polygon::generateHexInGrid(const UniformGrid &grid, const double hexRadi
         return {};
     }
 
+    // Escolhe uma célula não vazia para alocar o hexágono
     std::uniform_int_distribution<> distCell(0, static_cast<int>(nonEmptyCells.size() - 1));
     const Cell chosenCell = nonEmptyCells[distCell(gen)];
 
@@ -63,6 +68,7 @@ Polygon Polygon::generateHexInGrid(const UniformGrid &grid, const double hexRadi
     Polygon hex;
     hex.center = Point(-1, centerX, centerY);
 
+    // Escolhido o centro, define os pontos baseado no tamanho do "raio"
     for (int k = 0; k < 6; k++) {
         const double angle = M_PI / 3.0 * k;
         const double x = centerX + hexRadius * cos(angle);
@@ -82,6 +88,7 @@ bool Polygon::containsPoint(double x, double y) const {
 void Polygon::moveTo(const double newCenterX, const double newCenterY) {
     if (this->points.empty()) return;
 
+    // Move o polígono para uma posição específica
     const double deltaX = newCenterX - this->center.getX();
     const double deltaY = newCenterY - this->center.getY();
 

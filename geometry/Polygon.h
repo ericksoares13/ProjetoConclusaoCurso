@@ -15,6 +15,7 @@ class Polygon {
     Point center;
     double velocityX = 0.0;
     double velocityY = 0.0;
+    // Controla o movimento do polígono (via mouse)
     bool isDraggable = false;
     bool isBeingDragged = false;
 

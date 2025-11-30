@@ -14,6 +14,7 @@
 
 
 Screen::Screen() {
+    // Inicia a tela
     this->window.create(sf::VideoMode(this->windowWidth, this->windowHeight), "TCC - Erick");
     this->view.reset(sf::FloatRect(0, 0, static_cast<float>(this->windowWidth), static_cast<float>(this->windowHeight)));
     this->window.setView(this->view);
@@ -21,6 +22,7 @@ Screen::Screen() {
     this->backgroundTexture.clear(sf::Color::White);
 }
 
+// Converte as coordenadas geográficas para as cartesianas da tela
 sf::Vector2f Screen::latLonToScreen(const DynamicGraph &graph, const double lon, const double lat) const {
     const double x = (lon - graph.getMinLon()) / (graph.getMaxLon() - graph.getMinLon()) * this->windowWidth;
     const double y = (lat - graph.getMinLat()) / (graph.getMaxLat() - graph.getMinLat()) * this->windowHeight;
@@ -28,6 +30,7 @@ sf::Vector2f Screen::latLonToScreen(const DynamicGraph &graph, const double lon,
     return {static_cast<float>(x), static_cast<float>(this->windowHeight - y)};
 }
 
+// Converte as coordenadas cartesianas da tela para as geográficas
 sf::Vector2f Screen::screenToLatLon(const DynamicGraph &graph, const float screenX, const float screenY) const {
     const float normalizedX = screenX / static_cast<float>(this->windowWidth);
     const float normalizedY = 1.0f - (screenY / static_cast<float>(this->windowHeight));
@@ -38,6 +41,7 @@ sf::Vector2f Screen::screenToLatLon(const DynamicGraph &graph, const float scree
     return {static_cast<float>(lon), static_cast<float>(lat)};
 }
 
+// Desenha a grade uniforme na textura de fundo fixa
 void Screen::drawBackgroundGrid(const DynamicGraph &graph) {
     const int iMin = floor(graph.getMinLon() / graph.getCellSize());
     const int iMax = floor(graph.getMaxLon() / graph.getCellSize());
@@ -75,6 +79,7 @@ void Screen::drawBackgroundGrid(const DynamicGraph &graph) {
     }
 }
 
+// Desenha as arestas na textura de fundo fixa
 void Screen::drawBackgroundEdges(const DynamicGraph &graph) {
     for (auto &[id, edges]: graph.getAdj()){
         for (const auto &edge : edges) {
@@ -87,6 +92,7 @@ void Screen::drawBackgroundEdges(const DynamicGraph &graph) {
     }
 }
 
+// Desenha o background (textura fixa de fundo)
 void Screen::drawBackground(const DynamicGraph &graph) {
     this->drawBackgroundGrid(graph);
     this->drawBackgroundEdges(graph);
@@ -95,6 +101,8 @@ void Screen::drawBackground(const DynamicGraph &graph) {
     this->background.setTexture(backgroundTexture.getTexture());
 }
 
+// Desenha de vermelho as arestas que possuem interseção com os polígonos
+// Utiliza a grade unifrome para acelerar esse cálculo
 void Screen::drawEdges(const DynamicGraph &graph) {
     for (const auto &cell : GridHelper::getOccupiedCells(graph.getPolygons(), graph.getUniformGrid())) {
         const auto it = graph.getUniformGrid().getGrid().find(cell);
@@ -116,6 +124,7 @@ void Screen::drawEdges(const DynamicGraph &graph) {
     }
 }
 
+// Desenha os poígonos
 void Screen::drawPolygons(const DynamicGraph &graph) {
     for (auto &poly : graph.getPolygons()) {
         sf::ConvexShape shape;
@@ -141,6 +150,7 @@ void Screen::drawPolygons(const DynamicGraph &graph) {
     }
 }
 
+// Desenha os agentes com os seus percursos e origem/destino
 void Screen::drawAgents(const DynamicGraph& graph, const std::vector<Agent*>& agents) {
     for (auto &agent : agents) {
         if (agent->getPath().size() < 2) continue;
@@ -213,6 +223,7 @@ Polygon* getPolygonAtPosition(const DynamicGraph &graph, const float worldX, con
     return nullptr;
 }
 
+// Lida com o movimento dos polígonos via mouse
 void Screen::handleMouseDrag(const DynamicGraph &graph, const sf::Event& event) {
     const sf::Vector2i mousePixelPos = sf::Mouse::getPosition(this->window);
     const sf::Vector2f mouseWorldPos = this->window.mapPixelToCoords(mousePixelPos, this->view);
@@ -247,6 +258,7 @@ bool Screen::windowIsOpen() const {
     return this->window.isOpen();
 }
 
+// Processa os eventos de entrada do usuário
 void Screen::processEvents(const DynamicGraph &graph) {
     sf::Event event{};
 
@@ -267,6 +279,7 @@ void Screen::processEvents(const DynamicGraph &graph) {
     }
 }
 
+// Atualiza as informações lidas do usuário
 void Screen::update() {
     constexpr float panSpeed = 0.5f;
 
@@ -289,6 +302,7 @@ void Screen::update() {
     this->window.setView(this->view);
 }
 
+// Renderiza a tela com todas as informações do ciclo atual desenhadas
 void Screen::render(const DynamicGraph &graph, const std::vector<Agent*>& agents) {
     this->window.clear(sf::Color::White);
     this->window.draw(this->background);

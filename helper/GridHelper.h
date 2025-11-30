@@ -15,6 +15,7 @@
 
 class GridHelper {
 public:
+    // Retonra as células ocupadas por todos os polígonos
     static std::vector<Cell> getOccupiedCells(const std::vector<Polygon> &polygons, const UniformGrid &grid) {
         std::unordered_set<Cell, Cell::Hash> occupiedCellsSet;
 
@@ -26,6 +27,7 @@ public:
         return {occupiedCellsSet.begin(), occupiedCellsSet.end()};
     }
 
+    // Retorna as células ocupadas por um polígono específico
     static std::unordered_set<Cell, Cell::Hash> getOccupiedCells(const Polygon &polygon, const UniformGrid &grid) {
         std::unordered_set<Cell, Cell::Hash> occupiedCellsSet;
 
@@ -33,6 +35,7 @@ public:
             return occupiedCellsSet;
         }
 
+        // Constroi a caixa delimitadora do polígono
         double minX = std::numeric_limits<double>::infinity();
         double maxX = -std::numeric_limits<double>::infinity();
         double minY = std::numeric_limits<double>::infinity();
@@ -51,6 +54,7 @@ public:
         const int jMin = static_cast<int>(std::floor(minY / cellSize));
         const int jMax = static_cast<int>(std::floor(maxY / cellSize));
 
+        // Adiciona todas essas células no set de retorno
         for (int i = iMin; i <= iMax; i++) {
             for (int j = jMin; j <= jMax; j++) {
                 occupiedCellsSet.insert(Cell(i, j));
@@ -60,6 +64,7 @@ public:
         return occupiedCellsSet;
     }
 
+    // Retorna a célula em que o ponto se encontra
     static Cell getCellPoint(const Point &point, const double cellSize) {
         const int cellI = static_cast<int>(floor(point.getX() / cellSize));
         const int cellJ = static_cast<int>(floor(point.getY() / cellSize));

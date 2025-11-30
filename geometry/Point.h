@@ -9,8 +9,8 @@
 
 class Point {
     long long id;
-    double x;
-    double y;
+    double x;       // Longitude
+    double y;       // Latitude
 
 public:
     Point() : id(-1), x(INFINITY), y(INFINITY) {}

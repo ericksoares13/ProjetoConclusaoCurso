@@ -22,11 +22,13 @@ public:
     double getCellSize() const { return this->cellSize; }
 
     void insertEdge(Edge *edge) {
+        // Calcula a caixa delimitadora
         const int iMin = floor(std::min(edge->getU()->getX(), edge->getV()->getX()) / this->cellSize);
         const int iMax = floor(std::max(edge->getU()->getX(), edge->getV()->getX()) / this->cellSize);
         const int jMin = floor(std::min(edge->getU()->getY(), edge->getV()->getY()) / this->cellSize);
         const int jMax = floor(std::max(edge->getU()->getY(), edge->getV()->getY()) / this->cellSize);
 
+        // Adicionar a aresta em todas as células dessa caixa
         for (int i = iMin; i <= iMax; i++) {
             for (int j = jMin; j <= jMax; j++) {
                 this->grid[Cell(i,j)].push_back(edge);

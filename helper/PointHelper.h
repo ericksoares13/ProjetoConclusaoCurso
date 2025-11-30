@@ -21,13 +21,20 @@ public:
         const int n = static_cast<int>(poly.size());
         if (n == 0) return false;
 
+        // Precisa ter pelo menos três pontos para ser um polígono
         if (n < 3) return false;
 
+        // Define o ponto 0 como pivo
         const Point &A = poly[0];
 
+        // Se o ponto está para fora dos segmentos de reta 0 -> 1 ou 0 -> n-1
+        // Ele já está fora do polígono (polígono ordenado no sentido anti-horário)
         if (cross(poly[1]-A, p-A) < -EPS) return false;
         if (cross(poly[n-1]-A, p-A) > EPS) return false;
 
+        // Faz uma busca binária a partir dos pontos da esquerda e direita
+        // Para conseguir definir o "menor" triângulo que possui o ponto
+        // Definido pelo pivo e pelos dois pontos encontrados pela busca binária
         int left = 1, right = n-1;
         while (right - left > 1) {
             int mid = (left + right) / 2;
@@ -39,10 +46,13 @@ public:
         const double c1 = cross(poly[left]-A, p-A);
         const double c2 = cross(p-A, poly[right]-A);
 
+        // Calcula se o ponto está dentro desse triângulo
+        // Se estiver dentro do triângulo está dentro do polígono
         return c1 >= -EPS && c2 >= -EPS && (c - c1 - c2) >= -EPS;
     }
 
     static double haversineDistance(const Point& p1, const Point& p2) {
+        // Considera a curvatura da terra (em metros)
         constexpr double R = 6371000.0;
 
         const double lat1 = p1.getY() * M_PI / 180.0;

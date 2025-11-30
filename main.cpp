@@ -6,6 +6,7 @@
 #include "screen/Agent.h"
 #include "screen/Screen.h"
 
+// Faz a leitura do grafo
 void initGraph(DynamicGraph &graph, std::ifstream &inputFile) {
     int numPoints;
     int numEdges;
@@ -33,6 +34,7 @@ void initGraph(DynamicGraph &graph, std::ifstream &inputFile) {
     inputFile.close();
 }
 
+// Faz um ciclo de execução (para um teste)
 void runTest(DynamicGraph &graph, std::ofstream &csvFile, const int numPolygons, const double polygonRadius) {
     graph.clearPolygons();
     for(int i = 0; i < numPolygons; i++) {
@@ -68,6 +70,7 @@ void runTest(DynamicGraph &graph, std::ofstream &csvFile, const int numPolygons,
     delete staticAgent;
 }
 
+// Roda uma quantidade de testes armazenando os resultados em um csv
 void runTest(DynamicGraph &graph, const int numPolygons, const double polygonRadius) {
     std::ofstream csvFile("resultados_" + std::to_string(numPolygons) + "poligonos_raio" + std::to_string(polygonRadius) + "_tcc.csv");
     csvFile << "TicksStatic;DistStatic;AStarQntStatic;ProcessTimeMSStatic;";
@@ -81,6 +84,7 @@ void runTest(DynamicGraph &graph, const int numPolygons, const double polygonRad
     csvFile.close();
 }
 
+// Modo de visualização com 100 execuções seguidas
 void displayGraph(DynamicGraph &graph, const int numPolygons, const double polygonRadius) {
     for (int i = 0; i < numPolygons; i++) {
         Polygon poly = Polygon::generateHexInGrid(graph.getUniformGrid(), polygonRadius);

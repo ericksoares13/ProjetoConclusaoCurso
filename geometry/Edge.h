@@ -10,7 +10,7 @@
 class Edge {
     Point* u;
     Point* v;
-    double dist;
+    double dist;    // Distância em metros
 
 public:
     Edge() : u(nullptr), v(nullptr), dist(0.0) {}

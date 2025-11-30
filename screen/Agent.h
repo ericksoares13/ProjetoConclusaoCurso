@@ -13,24 +13,25 @@
 
 class Agent {
 public:
-    enum Type { Dynamic, Static };
+    enum Type { Dynamic, Static };      // Tipos de agentes
 
 private:
     Type type;
-    Point currentPosition;
-    std::vector<long long> path;
+    Point currentPosition;              // Posição atual do agente
+    std::vector<long long> path;        // Caminho já percorrido
     long long startId;
     long long currentId;
     long long endId;
 
-    std::vector<long long> pathAgent;
-    int pathAgentId;
+    std::vector<long long> pathAgent;   // Caminho que pretende percorrer
+    int pathAgentId;                    // Posição no caminho que pretende percorrer
 
-    double progressAlongEdge;
-    double currentSpeed;
-    long long nextNodeId;
-    bool isMoving;
+    double progressAlongEdge;           // O quanto já percorreu da aresta atual
+    double currentSpeed;                // Velocidade que percorre a aresta
+    long long nextNodeId;               // Próximo id para percorrer
+    bool isMoving;                      // Se está se movimentado
 
+    // Cache/Otimização
     std::unordered_set<Cell, Cell::Hash> lastOccupiedCells;
     std::unordered_map<int, std::unordered_set<Cell, Cell::Hash>> polygonToCellsCache;
 
